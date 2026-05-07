@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KRONODUAL V.3.0 - Luxury Gold</title>
+    
+    <!-- METADATOS PWA Y PERMISOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KRONODUAL">
+    <meta name="application-name" content="KRONODUAL">
+    <meta http-equiv="Permissions-Policy" content="camera=(self)">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app;
+        let db;
+        let auth;
+        
+        window.initFirebase = async () => {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.warn("Firebase config not available. Running in local mode.");
+                    return;
+                }
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                // setLogLevel('Debug'); // Comentado para producción
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        };
+        window.initFirebase();
+    </script>
+    
+    <style>
+        /* --- ESTILOS ULTRA GOLD / NEON --- */
+        body {
+            font-family: Arial, sans-serif !important;
+            background: radial-gradient(circle at center, #1a1200 0%, #000000 100%);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            min-height: 100vh; color: #fff8e1; overscroll-behavior: none;
+        }
+        
+        /* Panel Oro Metálico Brillante */
+        .gold-panel {
+            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+            border: 2px solid #ffd700;
+            border-radius: 16px;
+            color: #3e2723;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .gold-input {
+            background: rgba(255, 255, 255, 0.9); 
+            border: 2px solid #b8860b; color: #3e2723; font-weight: bold; font-family: Arial, sans-serif;
+            box-shadow: inset 1px 1px 5px rgba(0,0,0,0.2);
+        }
+        .gold-input:focus {
+            background: #ffffff; border-color: #8b4513; outline: none;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+
+        .font-arial { font-family: Arial, sans-serif !important; }
+
+        .neon-gold-title {
+            color: #4b3621;
+            text-align: left; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.8), 0 0 10px rgba(255,215,0,0.6);
+            font-family: Arial, sans-serif;
+        }
+        
+        /* ESTILO NEON ORO PURO (ARIAL - DIFUMINADO) */
+        .main-title-glow {
+            font-family: Arial, sans-serif !important;
+            font-style: normal !important; /* NO CURSIVA */
+            color: #fff;
+            text-shadow: 
+                0 0 10px #ffd700,
+                0 0 25px #ffd700,
+                0 0 45px #ffaa00,
+                0 0 70px #ff8c00; /* Difuminado aumentado */
+        }
+        
+        /* ESTILO NEON NEGRO (AUTOR) */
+        .author-glow {
+            font-family: Arial, sans-serif !important;
+            color: #000000; /* Negro intenso */
+            text-shadow: 0 0 2px rgba(255,255,255,0.4), 0 0 5px rgba(0,0,0,0.3); /* Sutil brillo para legibilidad */
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+        
+        .traffic-light-container.five-lights { display: flex; gap: 10px; }
+        .light {
+            width: 30px; height: 30px; border-radius: 50%;
+            background-color: #1a1a1a; border: 2px solid #5d4037; 
+            box-shadow: inset 0 0 5px #000;
+            transition: background-color 0.1s ease, box-shadow 0.1s ease;
+        }
+        .light.red { background-color: #ff0000; box-shadow: 0 0 30px #ff0000, inset 0 0 10px rgba(255,255,255,0.5); border-color: #ffcccc; }
+        .light.green { background-color: #00ff00; box-shadow: 0 0 30px #00ff00, inset 0 0 10px rgba(255,255,255,0.5); border-color: #ccffcc; }
+
+        #video-container {
+            position: relative; width: 100%; 
+            border: 4px solid #ffd700; background-color: #000; 
+            border-radius: 0.5rem; overflow: hidden; 
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.5);
+            touch-action: none;
+        }
+        
+        #webcam-feed {
+            max-height: 320px; object-fit: cover; width: 100%;
+            display: block; transform: scaleX(1);
+            filter: contrast(1.1) grayscale(0.1);
+        }
+
+        .movable-rectangle {
+            position: absolute; width: 30%; height: 30%; cursor: move;
+            background-color: rgba(255, 215, 0, 0.1); 
+            box-shadow: 0 0 15px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.1);
+            transition: background-color 0.1s ease, border-color 0.2s ease, opacity 0.2s ease; 
+            z-index: 10; box-sizing: border-box; touch-action: none; display: none;
+        }
+        
+        /* ROI P1: ORO */
+        #roi-p1 { border: 3px solid #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
+        #roi-p1 .roi-label { background: linear-gradient(45deg, #ffd700, #ffb300); color: #3e2723; text-shadow: none; border-color: #fff; }
+        #roi-p1.roi-detected {
+            background-color: rgba(255, 215, 0, 0.4) !important;
+            border-color: #fff !important; box-shadow: 0 0 50px #ffd700, inset 0 0 20px #fff !important;
+        }
+
+        /* ROI P2: COBRE BRILLANTE */
+        #roi-p2 { border: 3px solid #ff7f50; box-shadow: 0 0 15px rgba(255, 127, 80, 0.6); }
+        #roi-p2 .roi-label { background: linear-gradient(45deg, #ff7f50, #ff4500); color: #fff; text-shadow: 1px 1px 0 #000; border-color: #fff; }
+        #roi-p2.roi-detected {
+            background-color: rgba(255, 127, 80, 0.4) !important;
+            border-color: #fff !important; box-shadow: 0 0 50px #ff7f50, inset 0 0 20px #fff !important;
+        }
+        
+        /* ESTADO BLOQUEADO (Segundos de Seguridad) */
+        .movable-rectangle.roi-locked {
+            border-color: #777 !important;
+            box-shadow: none !important;
+            opacity: 0.6;
+        }
+        .movable-rectangle.roi-locked .roi-label {
+            background: #555 !important; color: #aaa !important;
+            border-color: #777;
+        }
+        .movable-rectangle.roi-locked .test-msg {
+            color: #ccc; text-shadow: none; font-size: 14px;
+        }
+
+        .roi-label {
+            position: absolute; top: -24px; left: -2px;
+            font-weight: 900; font-size: 12px; font-family: Arial, sans-serif;
+            padding: 2px 10px; border-radius: 4px;
+            pointer-events: none; border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .detection-val {
+            position: absolute; bottom: 2px; right: 2px;
+            background-color: rgba(0,0,0,0.7); color: #fff;
+            font-size: 10px; padding: 2px 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3);
+            pointer-events: none; font-weight: bold; font-family: Arial, sans-serif;
+        }
+        
+        /* MENSAJE DE TEST EN ROI */
+        .test-msg {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #00ff00; font-weight: 900; font-size: 20px; text-transform: uppercase;
+            text-shadow: 0 0 10px #000, 0 0 20px #00ff00; pointer-events: none; display: none;
+            white-space: nowrap; font-family: Arial, sans-serif; z-index: 20;
+        }
+        .roi-detected .test-msg { display: block; }
+        .roi-locked .test-msg { display: block; content: 'WAIT...'; }
+
+        /* NUEVOS MANEJADORES DE ESQUINA (MINIMALISTAS) */
+        .resize-handle {
+            position: absolute; width: 14px; height: 14px;
+            background-color: #ffd700;
+            border: 2px solid #fff;
+            z-index: 20; 
+            box-shadow: 0 0 6px rgba(0,0,0,0.8);
+            touch-action: none; 
+            transition: transform 0.1s ease;
+        }
+        .resize-handle:hover { transform: scale(1.2); }
+        .resize-handle:active { background-color: #fff; }
+
+        .handle-tl { top: -7px; left: -7px; cursor: nwse-resize; border-radius: 2px; } 
+        .handle-br { bottom: -7px; right: -7px; cursor: nwse-resize; border-radius: 2px; } 
+        
+        .timer-value {
+            font-size: 1.1rem; line-height: 1.5rem; 
+            white-space: nowrap; color: #2b2005; font-weight: 900;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.4); font-family: Arial, sans-serif;
+        }
+        @media (min-width: 640px) { .timer-value { font-size: 1.25rem; } }
+        
+        .telemetry-grid-twin {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;
+        }
+        .telemetry-col { display: flex; flex-direction: column; gap: 4px; }
+        .telemetry-item {
+            display: flex; flex-direction: column; padding: 4px 6px; border-radius: 6px;
+            background: linear-gradient(to bottom, #fffef0, #e6d6aa);
+            border: 1px solid #b38728; box-shadow: inset 0 1px 0 #fff, 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .telemetry-label {
+            font-size: 0.55rem; font-weight: 800; color: #785c15; 
+            margin-bottom: 0px; text-transform: uppercase; letter-spacing: 0.05em; font-family: Arial, sans-serif;
+        }
+        .telemetry-data { font-size: 0.75rem; font-weight: 900; color: #2b2005; font-family: Arial, sans-serif; line-height: 1;}
+
+        .bg-p1-soft { background-color: #fff9c4; border-left: 4px solid #ffd700; } 
+        .bg-p2-soft { background-color: #ffccbc; border-left: 4px solid #ff7043; } 
+
+        #config-panel {
+            transition: all 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0;
+            transform: translateY(-10px);
+        }
+        #config-panel.open {
+            max-height: 1500px; opacity: 1; transform: translateY(0); padding: 16px; margin-top: 10px; margin-bottom: 10px;
+        }
+        
+        /* BOTONES NEON ORO REALISTA */
+        .race-control-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 8px 0; border-radius: 12px;
+            background: transparent;
+            border: 3px solid #ffd700;
+            transition: all 0.2s ease;
+            font-size: 1rem; font-weight: 900; color: #ffd700; text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), inset 0 0 10px rgba(255,215,0,0.1);
+            font-family: Arial, sans-serif; letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+            height: 50px;
+        }
+        .race-control-btn:hover:not(:disabled) {
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), inset 0 0 15px rgba(255,215,0,0.3);
+            text-shadow: 0 0 15px #ffd700;
+            transform: translateY(-2px);
+            border-color: #fff;
+        }
+        .race-control-btn:active:not(:disabled) { 
+            background: #ffd700; color: #000; text-shadow: none;
+            box-shadow: 0 0 40px #ffd700;
+            transform: scale(0.98); 
+        }
+        .race-control-btn:disabled { 
+            opacity: 0.3; cursor: not-allowed; border-color: #555; color: #555; text-shadow: none; box-shadow: none;
+        }
+        
+        /* Neon Específico para INICIAR (Oro/Verde) */
+        #start-race-btn.race-control-btn { border-color: #ffd700; color: #ffd700; text-shadow: 0 0 10px #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+        #start-race-btn.race-control-btn:hover:not(:disabled) { box-shadow: 0 0 30px #ffd700; background: rgba(255,215,0,0.2); border-color: #fff; color: #fff;}
+        
+        /* Neon Específico para CONFIG (Oro) */
+        #central-config-btn { border-color: #b8860b; color: #b8860b; text-shadow: 0 0 5px #b8860b; }
+        
+        /* Neon Específico para REINICIAR (Cobre/Rojo) */
+        #reset-race-btn.race-control-btn { border-color: #ff7f50; color: #ff7f50; text-shadow: 0 0 5px #ff7f50; box-shadow: 0 0 10px rgba(255, 127, 80, 0.3); }
+        #reset-race-btn.race-control-btn:hover:not(:disabled) { box-shadow: 0 0 25px #ff7f50; background: rgba(255,127,80,0.1); border-color: #fff; color: #fff; }
+
+        /* Neon Específico para PAUSE (COBRE / BRONCE) - BLACK EDITION */
+        #pause-race-btn {
+            background-color: #000000; /* Fondo Negro */
+            border: 2px solid #b87333; /* Borde Cobre */
+            color: #b87333; 
+            box-shadow: 0 0 15px rgba(184, 115, 51, 0.5), inset 0 0 10px rgba(184, 115, 51, 0.2); /* Glow Inicial */
+            text-shadow: 0 0 5px rgba(184, 115, 51, 0.8);
+            transition: all 0.2s ease;
+            font-weight: 900;
+        }
+        #pause-race-btn:hover:not(:disabled) {
+            background-color: #1a0f00;
+            box-shadow: 0 0 30px #ff7f50, inset 0 0 15px #ff7f50; /* Super Neon Glow */
+            color: #fff;
+            border-color: #ff7f50;
+            text-shadow: 0 0 15px #ff7f50;
+            transform: scale(1.05);
+        }
+        #pause-race-btn:disabled {
+            opacity: 0.4; cursor: not-allowed; border-color: #444; color: #555; text-shadow: none; box-shadow: none; background: #111;
+        }
+
+        .control-icon { width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle; filter: drop-shadow(0 0 2px currentColor); }
+        .race-control-btn span { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%;}
+
+        #lap-graph-canvas {
+            width: 100%; height: 200px; background: rgba(0, 0, 0, 0.4); border-radius: 6px;
+            border: 2px solid #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.2);
+        }
+        
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.95); z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s;
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: linear-gradient(145deg, #fcf6ba 0%, #bf953f 100%);
+            color: #2b2005; border-radius: 1.5rem;
+            border: 4px solid #ffd700; box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+            max-width: 95%; max-height: 95%; overflow-y: auto; font-family: Arial, sans-serif;
+        }
+        .modal-overlay.open .modal-content { transform: scale(1); }
+        
+        table { width: 100%; text-align: left; border-collapse: collapse; margin-top: 10px; font-family: Arial, sans-serif; }
+        th, td {
+            padding: 8px; border-bottom: 1px solid #8b4513;
+            font-family: Arial, sans-serif; font-size: 0.9rem; color: #2b2005;
+        }
+        th { color: #000; text-transform: uppercase; font-weight: 900; border-bottom: 3px solid #8b4513; background: rgba(255,255,255,0.3); }
+        tr:hover td { background: rgba(255,255,255,0.4); }
+
+        #record-notification {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: linear-gradient(to right, #ffd700, #fff8e1, #ffd700);
+            color: #000; padding: 1.5rem 3rem; border-radius: 2rem;
+            font-size: 2rem; font-weight: 900; border: 6px solid #fff;
+            box-shadow: 0 0 60px #ffd700, 0 0 20px rgba(0,0,0,0.5);
+            z-index: 50; opacity: 0; pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s; white-space: nowrap;
+            text-transform: uppercase; letter-spacing: 2px; font-family: Arial, sans-serif;
+        }
+        #record-notification.show { opacity: 1; transform: translate(-50%, -50%) scale(1.1); animation: pop 0.3s ease-out; }
+        
+        #false-start-alert {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; background: linear-gradient(to bottom, #d32f2f, #b71c1c); 
+            border: 6px solid #fff; box-shadow: 0 0 50px #ff0000;
+            color: #fff; text-align: center; padding: 2rem; border-radius: 1.5rem;
+            z-index: 60; display: none; font-family: Arial, sans-serif;
+        }
+        #false-start-alert.show { display: block; animation: pulse 0.5s infinite alternate; }
+        @keyframes pulse { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.05); } }
+
+        .toggle-checkbox:checked { right: 0; border-color: #8d6e63; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #bcaaa4; }
+        
+        .btn-adjust {
+            background: linear-gradient(to bottom, #fff, #e0e0e0); border: 1px solid #8d6e63; color: #3e2723;
+            box-shadow: 0 2px 2px rgba(0,0,0,0.1); width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 0.8rem;
+        }
+        .btn-adjust:active { background: #bdbdbd; box-shadow: inset 0 2px 2px rgba(0,0,0,0.1); }
+        
+        .calib-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8); color: #ffd700; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 50; display: none; backdrop-filter: blur(2px); font-family: Arial, sans-serif;
+        }
+        .calib-overlay.active { display: flex; }
+        .spinner {
+            border: 6px solid #333; border-top: 6px solid #ffd700;
+            border-radius: 50%; width: 60px; height: 60px;
+            animation: spin 1s linear infinite; margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* TUTORIAL MODAL */
+        .tut-step { background: rgba(255,255,255,0.9); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid #b8860b; color: #333; text-align: left; }
+        .tut-icon { font-size: 2rem; margin-right: 10px; vertical-align: middle; }
+    </style>
+</head>
+<body>
+    <div class="container w-full max-w-4xl mx-auto p-4">
+
+        <!-- HEADER -->
+        <div class="gold-panel flex flex-col sm:flex-row justify-between items-center w-full py-4 px-6 mt-4 mb-6 header-flex">
+            <div class="flex flex-col items-start mb-2 sm:mb-0">
+                <div class="flex items-baseline">
+                    <h1 class="text-4xl sm:text-5xl main-title-glow font-black tracking-widest mr-2">
+                        KRONODUAL
+                    </h1>
+                    <span class="text-xl text-yellow-800 font-bold">V.3.0</span>
+                </div>
+                <span class="ml-1 author-glow">By Albert Closa</span>
+            </div>
+            
+            <div class="flex items-center gap-4 mt-2 sm:mt-0">
+                 <!-- Botón Tutorial Manual ELIMINADO -->
+
+                 <button id="history-btn" class="flex items-center text-amber-900 hover:text-black transition-colors px-3 py-1 rounded-full bg-white/30 border border-amber-500/30 hover:bg-white/60 shadow-sm group" title="Ver Historial">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history mr-2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/><path d="M12 7v5l4 2"/></svg>
+                    <span class="text-[10px] font-bold uppercase tracking-wider" data-lang-key="history_btn">Historial</span>
+                </button>
+                <button id="fullscreen-btn" class="text-amber-900 hover:text-black p-2 rounded-full bg-white/30 hover:bg-white/60 transition shadow-sm border border-amber-500/30">
+                     <svg id="fs-icon-enter" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                </button>
+                
+                <div id="traffic-light-module" class="traffic-light-container five-lights">
+                    <div id="light-1" class="light"></div>
+                    <div id="light-2" class="light"></div>
+                    <div id="light-3" class="light"></div>
+                    <div id="light-4" class="light"></div>
+                    <div id="light-5" class="light"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL DE TIEMPO DIVIDIDO -->
+        <div class="gold-panel w-full p-3 mb-6">
+            <div class="text-center border-b-2 border-amber-800/20 pb-3 mb-3">
+                <p class="text-xs text-amber-900 font-bold tracking-[0.3em] uppercase" data-lang-key="global_time">Tiempo Global</p>
+                <p id="race-time" class="text-5xl font-arial font-black text-transparent bg-clip-text bg-gradient-to-b from-black to-amber-900 drop-shadow-sm mt-1">00:00.000</p>
+            </div>
+            <div id="top-stats-grid" class="grid grid-cols-2 gap-0 divide-x-2 divide-amber-800/20">
+                <div class="text-center px-2">
+                    <p class="text-xs font-bold text-amber-800 tracking-widest mb-1" data-lang-key="player_1">JUGADOR 1 (ORO)</p>
+                    <p id="p1-lap-count" class="timer-value text-amber-900">V: 0 / 10</p>
+                    <p id="p1-current-lap" class="text-2xl font-arial font-bold text-amber-700 mt-1 drop-shadow-sm">--.---</p>
+                </div>
+                <div id="p2-top-stats" class="text-center px-2">
+                    <p class="text-xs font-bold text-orange-800 tracking-widest mb-1" data-lang-key="player_2">JUGADOR 2 (COBRE)</p>
+                    <p id="p2-lap-count" class="timer-value text-amber-900">V: 0 / 10</p>
+                    <p id="p2-current-lap" class="text-2xl font-arial font-bold text-orange-700 mt-1 drop-shadow-sm">--.---</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROL BUTTONS COMPACT -->
+        <div class="w-full flex space-x-3 mb-4">
+            <button id="start-race-btn" class="flex-1 race-control-btn disabled:opacity-50 disabled:cursor-not-allowed">
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="control-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg> <span data-lang-key="start_race">INICIAR</span>
+                </span>
+            </button>
+            <button id="central-config-btn" class="flex-1 race-control-btn disabled:opacity-50 disabled:cursor-not-allowed">
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="control-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span data-lang-key="config">CONFIG</span>
+                </span>
+            </button>
+            <button id="reset-race-btn" class="flex-1 race-control-btn disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="control-icon"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg> <span data-lang-key="reset_race">REINICIAR</span>
+                </span>
+            </button>
+        </div>
+        
+        <!-- CONFIG PANEL (MOVED DOWN) -->
+        <div id="config-panel" class="gold-panel w-full mb-4">
+            <h2 class="text-sm neon-gold-title mb-3 border-b-2 border-amber-700/20 pb-2 flex items-center justify-start">
+                <span class="mr-2">⚙️</span> <span data-lang-key="config_title">Configuración</span>
+            </h2>
+
+            <!-- SELECTOR DE IDIOMA -->
+            <div class="mb-4">
+                 <label class="block text-[10px] font-bold text-amber-800 mb-1 uppercase" data-lang-key="language_label">Idioma / Language</label>
+                 <select id="language-select" class="gold-input w-full p-2 rounded-lg text-sm font-bold text-center">
+                    <option value="es" selected>🇪🇸 Español</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="fr">🇫🇷 Français</option>
+                 </select>
+            </div>
+
+            <!-- SELECTOR DE MODO DE JUEGO -->
+            <div class="mb-4">
+                 <label class="block text-[10px] font-bold text-amber-800 mb-1 uppercase" data-lang-key="game_mode_label">Modo de Juego</label>
+                 <select id="game-mode-select" class="gold-input w-full p-2 rounded-lg text-sm font-bold text-center">
+                    <option value="2" selected data-lang-key="mode_2p">🏁 2 JUGADORES (Duelo)</option>
+                    <option value="1" data-lang-key="mode_1p">⏱️ 1 JUGADOR (Contrarreloj)</option>
+                 </select>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- COLUMNA JUGADOR 1 -->
+                <div class="p-3 bg-yellow-100/30 rounded-xl border border-yellow-400 shadow-inner">
+                    <h3 class="text-xs font-black text-amber-900 uppercase mb-2 border-b border-amber-300 pb-1 tracking-wider" data-lang-key="player_1">JUGADOR 1 (ORO)</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-amber-900 mb-1" data-lang-key="name_label">Nombre</label>
+                            <input type="text" id="p1-name" value="Piloto 1" class="gold-input w-full p-1.5 rounded-lg border-l-8 border-yellow-500 text-xs" />
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-amber-900 mb-1" data-lang-key="car_label">Coche</label>
+                            <input type="text" id="p1-car" value="Porsche 911" class="gold-input w-full p-1.5 rounded-lg text-xs" />
+                        </div>
+                        <div class="bg-white/60 p-2 rounded-lg border border-amber-200 shadow-sm">
+                             <div class="flex justify-between items-center mb-1">
+                                <label class="text-[10px] font-bold text-amber-900" data-lang-key="sensitivity_label">SENSIBILIDAD IA</label>
+                                <span id="p1-threshold-disp" class="text-xs font-black text-amber-700 bg-amber-100 px-2 rounded">20</span>
+                             </div>
+                             <div class="flex items-center space-x-2">
+                                <button class="btn-adjust" onclick="adjT(1, -1)">-</button>
+                                <input type="range" id="p1-threshold" min="5" max="80" value="20" class="flex-1 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                                <button class="btn-adjust" onclick="adjT(1, 1)">+</button>
+                             </div>
+                        </div>
+                        <div>
+                             <label class="block text-[10px] font-bold text-amber-900 mb-1" data-lang-key="sound_p1">Sonido P1</label>
+                             <select id="p1-sound" class="gold-input w-full p-1.5 rounded-lg text-xs">
+                                <option value="C4">Grave (C4)</option>
+                                <option value="E4">Medio (E4)</option>
+                                <option value="G4">Alto (G4)</option>
+                                <option value="C5" selected>Beep (C5)</option>
+                                <option value="G5">Agudo (G5)</option>
+                                <option value="C6">Muy Agudo (C6)</option>
+                             </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA JUGADOR 2 -->
+                <div id="p2-config-block" class="p-3 bg-orange-100/30 rounded-xl border border-orange-400 shadow-inner">
+                    <h3 class="text-xs font-black text-orange-900 uppercase mb-2 border-b border-orange-300 pb-1 tracking-wider" data-lang-key="player_2">JUGADOR 2 (COBRE)</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-amber-900 mb-1" data-lang-key="name_label">Nombre</label>
+                            <input type="text" id="p2-name" value="Piloto 2" class="gold-input w-full p-1.5 rounded-lg border-l-8 border-orange-500 text-xs" />
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-amber-900 mb-1" data-lang-key="car_label">Coche</label>
+                            <input type="text" id="p2-car" value="Audi R8" class="gold-input w-full p-1.5 rounded-lg text-xs" />
+                        </div>
+                        <div class="bg-white/60 p-2 rounded-lg border border-amber-200 shadow-sm">
+                             <div class="flex justify-between items-center mb-1">
+                                <label class="text-[10px] font-bold text-amber-900" data-lang-key="sensitivity_label">SENSIBILIDAD IA</label>
+                                <span id="p2-threshold-disp" class="text-xs font-black text-orange-700 bg-orange-100 px-2 rounded">20</span>
+                             </div>
+                             <div class="flex items-center space-x-2">
+                                <button class="btn-adjust" onclick="adjT(2, -1)">-</button>
+                                <input type="range" id="p2-threshold" min="5" max="80" value="20" class="flex-1 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-orange-600">
+                                <button class="btn-adjust" onclick="adjT(2, 1)">+</button>
+                             </div>
+                        </div>
+                         <div>
+                             <label class="block text-[10px] font-bold text-amber-900 mb-1" data-lang-key="sound_p2">Sonido P2</label>
+                             <select id="p2-sound" class="gold-input w-full p-1.5 rounded-lg text-xs">
+                                <option value="C4">Grave (C4)</option>
+                                <option value="E4">Medio (E4)</option>
+                                <option value="G4">Alto (G4)</option>
+                                <option value="C5">Beep (C5)</option>
+                                <option value="G5" selected>Agudo (G5)</option>
+                                <option value="C6">Muy Agudo (C6)</option>
+                             </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t-2 border-amber-700/20">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                     <div>
+                        <label class="block text-[10px] font-bold text-amber-800 mb-1 uppercase" data-lang-key="track_length_label">Longitud Pista (m)</label>
+                        <input type="number" id="track-length-input" value="15" min="1" step="0.5" class="gold-input w-full p-1.5 rounded-lg text-xs" />
+                    </div>
+                    
+                    <!-- NUEVO SELECTOR TIPO DE CARRERA -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-amber-800 mb-1 uppercase" data-lang-key="race_condition_label">Tipo de Carrera</label>
+                        <div class="flex gap-2">
+                            <select id="race-condition-select" class="gold-input w-1/2 p-1.5 rounded-lg text-xs">
+                                <option value="laps" selected data-lang-key="condition_laps">Vueltas</option>
+                                <option value="time" data-lang-key="condition_time">Tiempo</option>
+                            </select>
+                            
+                            <!-- SELECTOR VUELTAS (VISIBLE POR DEFECTO) -->
+                            <select id="lap-limit-select" class="gold-input w-1/2 p-1.5 rounded-lg text-xs">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="Infinity">∞</option>
+                            </select>
+                            
+                            <!-- SELECTOR TIEMPO (OCULTO POR DEFECTO) -->
+                            <select id="time-limit-select" class="gold-input w-1/2 p-1.5 rounded-lg text-xs hidden">
+                                <option value="5">5 min</option>
+                                <option value="10">10 min</option>
+                                <option value="15">15 min</option>
+                                <option value="20">20 min</option>
+                                <option value="25">25 min</option>
+                                <option value="30">30 min</option>
+                                <option value="35">35 min</option>
+                                <option value="40">40 min</option>
+                                <option value="45">45 min</option>
+                                <option value="50">50 min</option>
+                                <option value="55">55 min</option>
+                                <option value="60">60 min</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-4 bg-white/30 p-2 rounded-lg border border-amber-200">
+                         <label for="voice-toggle" class="text-xs font-bold text-amber-900" data-lang-key="voice_comments">Comentarios Voz:</label>
+                         <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="voice-toggle" id="voice-toggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-amber-500 appearance-none cursor-pointer" checked/>
+                            <label for="voice-toggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-amber-200 cursor-pointer border border-amber-500"></label>
+                        </div>
+                    </div>
+                </div>
+                 <!-- NUEVA SECCION: SEGURIDAD -->
+                 <div class="mt-4 flex flex-col sm:flex-row gap-4 items-center justify-center p-3 bg-red-50/50 rounded-lg border border-red-200">
+                    <label class="text-xs font-black text-amber-900 uppercase tracking-widest flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span data-lang-key="safety_time_label">Tiempo de Seguridad (IA):</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <select id="safety-time-select" class="gold-input p-1.5 rounded-lg text-xs font-bold text-center">
+                            <option value="1000">1s</option>
+                            <option value="3000" selected>3s</option>
+                            <option value="5000">5s</option>
+                            <option value="10000">10s</option>
+                        </select>
+                    </div>
+                    <p class="text-[9px] text-amber-800 italic max-w-xs text-center" data-lang-key="safety_time_desc">Evita dobles conteos. El sistema ignora detecciones durante este tiempo tras cruzar la meta.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- VIDEO BOX -->
+        <div id="video-feed-box" class="gold-panel px-4 py-3 w-full mb-6 relative">
+            <div class="flex justify-between items-center border-b-2 border-amber-800/20 pb-3 mb-3">
+                <h2 class="text-base neon-gold-title" data-lang-key="camera_title">Cámara Twin ROI</h2>
+                <div class="flex space-x-2">
+                    <button id="calibrate-btn" class="p-2 px-4 rounded-full bg-gradient-to-b from-amber-400 to-amber-600 text-white hover:from-amber-500 hover:to-amber-700 transition shadow-lg border border-amber-200 text-xs font-bold uppercase disabled:opacity-50 tracking-wider disabled:grayscale" disabled data-lang-key="btn_calibrate">
+                        Auto Calibrar
+                    </button>
+                    <button id="camera-on-btn" class="p-2 rounded-full bg-gradient-to-b from-green-500 to-green-700 text-white hover:from-green-600 hover:to-green-800 disabled:opacity-50 transition shadow-lg border border-green-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    </button>
+                    <button id="camera-off-btn" class="p-2 rounded-full bg-gradient-to-b from-red-500 to-red-700 text-white hover:from-red-600 hover:to-red-800 disabled:opacity-50 transition shadow-lg border border-red-300" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20"/><path d="M4.5 17H4a2 2 0 0 1-2-2v-3h18.5"/><path d="M22 15a2 2 0 0 0-2-2h-1l-2.5-3h-2.5"/><path d="M9.5 4h5L17 7h3a2 2 0 0 1 2 2v1"/><path d="M14.5 17a3 3 0 1 1-5.6-2.5"/></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="camera-error-alert" class="hidden bg-red-100 border border-red-400 text-red-700 py-3 rounded-md mb-3">
+                <span id="camera-error-text" class="block sm:inline font-bold text-sm"></span>
+            </div>
+            
+            <!-- OVERLAYS SOBRE EL VIDEO -->
+            <div id="video-container" class="rounded-xl border-4 border-yellow-400/50">
+                <video id="webcam-feed" class="w-full shadow-inner" autoplay playsinline></video>
+                
+                <!-- ALERT DE CALIBRACION -->
+                <div id="calib-overlay" class="calib-overlay">
+                    <div class="spinner"></div>
+                    <h3 class="text-2xl font-black text-yellow-300 uppercase tracking-widest drop-shadow-md" data-lang-key="calibrating_title">Calibrando Sensores</h3>
+                    <p class="text-base mt-2 text-white font-bold bg-black/50 px-4 py-1 rounded-full" data-lang-key="calibrating_desc">Mantén la pista despejada</p>
+                </div>
+
+                <!-- ALERT BANDERA AMARILLA -->
+                <div id="yellow-flag-overlay" class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-yellow-900/40 z-50 hidden backdrop-blur-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="#ffd700" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse drop-shadow-lg"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                    <h2 class="text-5xl font-black text-yellow-400 uppercase tracking-widest drop-shadow-md mt-2" style="-webkit-text-stroke: 2px black;" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
+                    <div class="mt-4 flex gap-2">
+                        <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
+                        <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping delay-75"></div>
+                        <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping delay-150"></div>
+                    </div>
+                </div>
+
+                <!-- ALERT DE SALIDA NULA -->
+                <div id="false-start-alert">
+                    <h2 class="text-5xl font-black uppercase tracking-widest mb-4 text-white drop-shadow-md" data-lang-key="false_start">¡SALIDA NULA!</h2>
+                    <p id="false-start-player" class="text-3xl font-bold text-yellow-300 bg-black/40 inline-block px-6 py-2 rounded-lg"></p>
+                </div>
+
+                <!-- ROI PLAYER 1 (AZUL) -->
+                <div id="roi-p1" class="movable-rectangle" style="top: 25%; left: 10%;">
+                    <div class="roi-label">P1</div>
+                    <div id="msg-p1" class="test-msg"></div>
+                    <div id="val-p1" class="detection-val">0</div>
+                    <div class="resize-handle handle-tl"></div>
+                    <div class="resize-handle handle-br"></div>
+                </div>
+                <!-- ROI PLAYER 2 (ROJO) -->
+                <div id="roi-p2" class="movable-rectangle" style="top: 25%; left: 60%;">
+                    <div class="roi-label">P2</div>
+                    <div id="msg-p2" class="test-msg"></div>
+                    <div id="val-p2" class="detection-val">0</div>
+                    <div class="resize-handle handle-tl"></div>
+                    <div class="resize-handle handle-br"></div>
+                </div>
+            </div>
+            
+            <canvas id="video-canvas" class="hidden"></canvas>
+            <div id="video-status" class="text-center text-xs mt-3 text-amber-900 font-bold tracking-widest uppercase" data-lang-key="video_status_init">Inicia la cámara para configurar carriles</div>
+        </div>
+
+        <!-- TELEMETRIA TWIN -->
+        <div class="gold-panel w-full p-4 mb-6">
+            <div class="flex justify-between items-center mb-3 border-b-2 border-amber-800/20 pb-2">
+                <h2 class="text-sm neon-gold-title flex items-center justify-start text-yellow-600 m-0" data-lang-key="telemetry_title">
+                    TELEMETRÍA EN VIVO
+                </h2>
+                <!-- BOTON PAUSA INTEGRADO EN EL PANEL DE TELEMETRIA -->
+                <button id="pause-race-btn" class="px-4 py-2 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-2" disabled>
+                     <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="control-icon m-0" style="width:12px; height:12px;" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                     <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="control-icon m-0 hidden" style="width:12px; height:12px;" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                     <span id="pause-text" data-lang-key="pause">PAUSAR</span>
+                </button>
+            </div>
+            
+            <div id="telemetry-grid" class="telemetry-grid-twin">
+                <!-- COLUMNA P1 -->
+                <div class="telemetry-col">
+                    <div class="telemetry-item bg-p1-soft">
+                        <p class="telemetry-label text-amber-800" data-lang-key="best_lap">MEJOR VUELTA</p>
+                        <p id="p1-best-lap" class="telemetry-data font-arial text-lg">--.---</p>
+                    </div>
+                    <div class="telemetry-item">
+                        <p class="telemetry-label" data-lang-key="last_lap">ÚLTIMA</p>
+                        <p id="p1-last-lap" class="telemetry-data font-arial">--.---</p>
+                    </div>
+                    <div class="telemetry-item">
+                        <p class="telemetry-label" data-lang-key="avg_time">MEDIA</p>
+                        <p id="p1-avg-time" class="telemetry-data font-arial">--.---</p>
+                    </div>
+                    <div class="telemetry-item">
+                        <p class="telemetry-label" data-lang-key="speed">VELOCIDAD</p>
+                        <p id="p1-avg-speed" class="telemetry-data font-arial">--.- Km/h</p>
+                    </div>
+                    <div class="telemetry-item">
+                         <p class="telemetry-label">GAP</p>
+                         <p id="p1-gap" class="telemetry-data font-arial text-amber-900">--</p>
+                    </div>
+                </div>
+
+                <!-- COLUMNA P2 -->
+                <div id="p2-telemetry-col" class="telemetry-col">
+                    <div class="telemetry-item bg-p2-soft">
+                        <p class="telemetry-label text-orange-800" data-lang-key="best_lap">MEJOR VUELTA</p>
+                        <p id="p2-best-lap" class="telemetry-data font-arial text-lg">--.---</p>
+                    </div>
+                    <div class="telemetry-item">
+                        <p class="telemetry-label" data-lang-key="last_lap">ÚLTIMA</p>
+                        <p id="p2-last-lap" class="telemetry-data font-arial">--.---</p>
+                    </div>
+                    <div class="telemetry-item">
+                        <p class="telemetry-label" data-lang-key="avg_time">MEDIA</p>
+                        <p id="p2-avg-time" class="telemetry-data font-arial">--.---</p>
+                    </div>
+                    <div class="telemetry-item">
+                        <p class="telemetry-label" data-lang-key="speed">VELOCIDAD</p>
+                        <p id="p2-avg-speed" class="telemetry-data font-arial">--.- Km/h</p>
+                    </div>
+                    <div class="telemetry-item">
+                         <p class="telemetry-label">GAP</p>
+                         <p id="p2-gap" class="telemetry-data font-arial text-amber-900">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRAFICA -->
+        <div class="gold-panel w-full p-4 mb-4">
+            <h2 class="text-xs neon-gold-title mb-3 border-b border-yellow-900/50 pb-2 uppercase tracking-widest text-left text-yellow-600" data-lang-key="graph_title">Tiempos de Carrera</h2>
+            <canvas id="lap-graph-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- TUTORIAL MODAL (NUEVO) -->
+    <div id="tutorialModal" class="modal-overlay">
+        <div class="modal-content p-8 w-full max-w-lg neon-border-box text-center">
+            <div class="mb-6 border-b-2 border-amber-300 pb-4">
+                <h3 class="text-3xl font-black text-amber-950 uppercase" data-lang-key="tut_title">Guía Rápida</h3>
+                <p class="text-amber-800 font-bold text-sm" data-lang-key="tut_subtitle">Configuración en 4 pasos</p>
+            </div>
+            
+            <div class="text-left space-y-4 mb-8">
+                <div class="tut-step">
+                    <span class="tut-icon">📱</span>
+                    <strong data-lang-key="tut_step1_title">1. CÁMARA FIJA:</strong> <span data-lang-key="tut_step1_desc">Enfoca la pista con tu dispositivo. El ángulo no importa, evita que los sensores se toquen.</span>
+                </div>
+                <div class="tut-step">
+                    <span class="tut-icon">🎯</span>
+                    <strong data-lang-key="tut_step2_title">2. SENSORES:</strong> <span data-lang-key="tut_step2_desc">Arrastra los cuadrados sobre cada carril.</span>
+                </div>
+                <div class="tut-step">
+                    <span class="tut-icon">✨</span>
+                    <strong data-lang-key="tut_step3_title">3. CALIBRAR:</strong> <span data-lang-key="tut_step3_desc">Con la pista VACÍA, pulsa AUTO CALIBRAR.</span>
+                </div>
+                <div class="tut-step">
+                    <span class="tut-icon">🏎️</span>
+                    <strong data-lang-key="tut_step4_title">4. PRUEBA:</strong> <span data-lang-key="tut_step4_desc">Pasa un coche con la mano. Si sale "TEST OK", ¡estás listo!</span>
+                </div>
+            </div>
+
+            <button id="close-tutorial-btn" class="w-full bg-gradient-to-r from-amber-600 to-amber-800 text-white font-bold py-4 rounded-xl hover:from-amber-500 hover:to-amber-700 transition shadow-xl border border-amber-400/50 text-lg tracking-widest uppercase" data-lang-key="tut_btn">
+                ¡ENTENDIDO, A CORRER!
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL -->
+    <div id="historyModal" class="modal-overlay hidden">
+        <div class="modal-content p-6 w-full max-w-2xl">
+            <div class="flex justify-between items-center border-b-2 border-amber-800/30 pb-3 mb-4">
+                <h3 class="text-2xl font-black text-amber-900 uppercase tracking-wide" data-lang-key="history_title">Historial de Carreras</h3>
+                <button id="close-history-btn" class="text-amber-800 hover:text-black font-bold text-xl px-2">X</button>
+            </div>
+            <div class="overflow-y-auto max-h-96">
+                <table class="w-full text-left text-sm">
+                    <thead><tr><th class="p-3" data-lang-key="col_date">FECHA</th><th class="p-3" data-lang-key="col_winner">GANADOR</th><th class="p-3" data-lang-key="col_time">TIEMPO</th><th class="p-3">P1 BEST</th><th class="p-3">P2 BEST</th></tr></thead>
+                    <tbody id="full-history-body" class="text-amber-950 font-medium"></tbody>
+                </table>
+                <p id="no-history-msg" class="text-center text-amber-800 mt-6 font-bold hidden" data-lang-key="no_history">No hay registros guardados.</p>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="clear-history-btn" class="text-xs bg-red-100 text-red-800 border border-red-300 px-4 py-2 rounded-lg hover:bg-red-200 font-bold uppercase tracking-wider transition" data-lang-key="clear_history">Borrar Todo</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL RESULTADOS -->
+    <div id="resultsModal" class="modal-overlay hidden">
+        <div class="modal-content p-8 w-full max-w-2xl neon-border-box text-center">
+             <div class="mb-8">
+                <h3 class="text-4xl font-black text-amber-950 uppercase tracking-widest mb-2" style="text-shadow: 0 2px 0 rgba(255,255,255,0.5)" data-lang-key="race_finished">¡Carrera Finalizada!</h3>
+                <div class="inline-block bg-white/50 px-6 py-2 rounded-full border border-amber-300 shadow-sm mt-2">
+                    <p id="winner-text" class="text-2xl font-bold text-green-800">Ganador: ...</p>
+                </div>
+            </div>
+            
+            <!-- GRID DE DETALLES - AÑADIDO ID Y IDs A LAS TARJETAS -->
+            <div id="results-grid" class="grid grid-cols-2 gap-6 mb-8 text-left">
+                <!-- P1 Summary -->
+                <div id="p1-summary-card" class="bg-yellow-100/50 p-4 rounded-xl border border-yellow-400 shadow-inner">
+                    <h4 class="text-xl text-amber-900 font-black mb-3 text-center border-b-2 border-amber-300 pb-2" id="modal-p1-name">P1</h4>
+                    <div class="space-y-2 text-sm text-amber-900">
+                        <div class="flex justify-between"><span data-lang-key="total">Total:</span> <span id="modal-p1-total" class="font-bold font-arial">--</span></div>
+                        <div class="flex justify-between"><span data-lang-key="best">Mejor:</span> <span id="modal-p1-best" class="font-bold text-green-700 font-arial">--</span></div>
+                        <div class="flex justify-between"><span data-lang-key="avg">Media:</span> <span id="modal-p1-avg" class="font-bold font-arial">--</span></div>
+                        <div class="flex justify-between"><span data-lang-key="speed_avg">Vel. Med:</span> <span id="modal-p1-speed" class="font-bold font-arial">--</span></div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-xs font-bold text-amber-800 mb-1 uppercase tracking-wide" data-lang-key="laps_label">Vueltas:</p>
+                        <ul id="modal-p1-laps" class="text-xs font-arial h-40 overflow-y-auto bg-white/80 p-2 rounded-lg border border-amber-200 shadow-inner text-amber-900"></ul>
+                    </div>
+                </div>
+
+                <!-- P2 Summary -->
+                <div id="p2-summary-card" class="bg-orange-100/50 p-4 rounded-xl border border-orange-400 shadow-inner">
+                    <h4 class="text-xl text-orange-900 font-black mb-3 text-center border-b-2 border-orange-300 pb-2" id="modal-p2-name">P2</h4>
+                    <div class="space-y-2 text-sm text-orange-900">
+                        <div class="flex justify-between"><span data-lang-key="total">Total:</span> <span id="modal-p2-total" class="font-bold font-arial">--</span></div>
+                        <div class="flex justify-between"><span data-lang-key="best">Mejor:</span> <span id="modal-p2-best" class="font-bold text-green-700 font-arial">--</span></div>
+                         <div class="flex justify-between"><span data-lang-key="avg">Media:</span> <span id="modal-p2-avg" class="font-bold font-arial">--</span></div>
+                         <div class="flex justify-between"><span data-lang-key="speed_avg">Vel. Med:</span> <span id="modal-p2-speed" class="font-bold font-arial">--</span></div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-xs font-bold text-orange-800 mb-1 uppercase tracking-wide" data-lang-key="laps_label">Vueltas:</p>
+                        <ul id="modal-p2-laps" class="text-xs font-arial h-40 overflow-y-auto bg-white/80 p-2 rounded-lg border border-orange-200 shadow-inner text-orange-900"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTONES ACCIÓN MODAL -->
+            <button id="export-excel-btn" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-900 text-white font-bold py-3 rounded-xl hover:from-emerald-500 hover:to-emerald-800 transition shadow-xl border border-emerald-400/50 text-base tracking-widest uppercase mb-4 flex items-center justify-center gap-2 font-arial">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <span data-lang-key="export_btn">EXPORTAR DATOS (CSV)</span>
+            </button>
+
+            <button id="modal-restart-btn" class="w-full bg-gradient-to-r from-gray-800 to-black text-white font-bold py-4 rounded-xl hover:from-gray-700 hover:to-gray-900 transition shadow-xl border border-amber-500/50 text-lg tracking-widest uppercase font-arial" data-lang-key="restart_btn">VOLVER A EMPEZAR</button>
+        </div>
+    </div>
+    
+    <!-- NOTIFICACION DE RECORD -->
+    <div id="record-notification">¡NUEVO RÉCORD!</div>
+
+    <script>
+        // --- TRANSLATIONS ---
+        const translations = {
+            es: {
+                start_race: "INICIAR", config: "CONFIG", reset_race: "REINICIAR",
+                pause: "PAUSAR", resume: "REANUDAR",
+                history_btn: "Historial",
+                global_time: "TIEMPO GLOBAL",
+                player_1: "JUGADOR 1 (ORO)", player_2: "JUGADOR 2 (COBRE)",
+                config_title: "Configuración",
+                language_label: "Idioma / Language",
+                game_mode_label: "Modo de Juego",
+                mode_2p: "🏁 2 JUGADORES (Duelo)", mode_1p: "⏱️ 1 JUGADOR (Contrarreloj)",
+                name_label: "Nombre", car_label: "Coche", sensitivity_label: "SENSIBILIDAD IA",
+                sound_p1: "Sonido P1", sound_p2: "Sonido P2",
+                track_length_label: "Longitud Pista (m)", laps_label: "Vueltas",
+                race_condition_label: "Tipo de Carrera",
+                condition_laps: "Vueltas", condition_time: "Tiempo (Resistencia)",
+                voice_comments: "Comentarios Voz:",
+                safety_time_label: "Tiempo de Seguridad (IA):",
+                safety_time_desc: "Evita dobles conteos. El sistema ignora detecciones durante este tiempo tras cruzar la meta.",
+                camera_title: "Cámara Twin ROI",
+                btn_calibrate: "AUTO CALIBRAR",
+                video_status_init: "Inicia la cámara para configurar carriles",
+                video_status_ready: "CÁMARA ACTIVA - SISTEMA LISTO",
+                video_status_off: "Cámara apagada.",
+                calibrating_title: "Calibrando Sensores", calibrating_desc: "Mantén la pista despejada",
+                false_start: "¡SALIDA NULA!",
+                flag_yellow: "BANDERA AMARILLA",
+                telemetry_title: "TELEMETRÍA EN VIVO",
+                best_lap: "MEJOR VUELTA", last_lap: "ÚLTIMA", avg_time: "MEDIA", speed: "VELOCIDAD",
+                graph_title: "Tiempos de Carrera",
+                tut_title: "Guía Rápida", tut_subtitle: "Configuración en 4 pasos",
+                tut_step1_title: "1. CÁMARA FIJA:", tut_step1_desc: "Enfoca la pista con tu dispositivo.",
+                tut_step2_title: "2. SENSORES:", tut_step2_desc: "Arrastra los cuadrados sobre cada carril.",
+                tut_step3_title: "3. CALIBRAR:", tut_step3_desc: "Con la pista VACÍA, pulsa AUTO CALIBRAR.",
+                tut_step4_title: "4. PRUEBA:", tut_step4_desc: "Pasa un coche con la mano. Si sale TEST OK, listo.",
+                tut_btn: "¡ENTENDIDO, A CORRER!",
+                history_title: "Historial de Carreras",
+                col_date: "FECHA", col_winner: "GANADOR", col_time: "TIEMPO",
+                no_history: "No hay registros guardados.", clear_history: "Borrar Todo",
+                race_finished: "¡Carrera Finalizada!",
+                winner: "Ganador:", completed: "¡Completado!",
+                total: "Total:", best: "Mejor:", avg: "Media:", speed_avg: "Vel. Med:",
+                export_btn: "EXPORTAR DATOS (CSV)", restart_btn: "VOLVER A EMPEZAR",
+                // Voice messages
+                voice_ready: "Pilotos a sus puestos.",
+                voice_false_start: "Salida Nula.",
+                voice_record: "¡Vuelta rápida de ",
+                voice_5_left: "quedan 5 vueltas.",
+                voice_last_lap: "¡Última vuelta!",
+                voice_winner: "Victoria para ",
+                voice_completed: "Carrera completada",
+                voice_calibrated: "Sensores calibrados."
+            },
+            en: {
+                start_race: "START", config: "CONFIG", reset_race: "RESET",
+                pause: "PAUSE", resume: "RESUME",
+                history_btn: "History",
+                global_time: "GLOBAL TIME",
+                player_1: "PLAYER 1 (GOLD)", player_2: "PLAYER 2 (COPPER)",
+                config_title: "Configuration",
+                language_label: "Language",
+                game_mode_label: "Game Mode",
+                mode_2p: "🏁 2 PLAYERS (Duel)", mode_1p: "⏱️ 1 PLAYER (Time Trial)",
+                name_label: "Name", car_label: "Car", sensitivity_label: "AI SENSITIVITY",
+                sound_p1: "P1 Sound", sound_p2: "P2 Sound",
+                track_length_label: "Track Length (m)", laps_label: "Laps",
+                race_condition_label: "Race Type",
+                condition_laps: "Laps", condition_time: "Time (Endurance)",
+                voice_comments: "Voice Commentary:",
+                safety_time_label: "Safety Time (AI):",
+                safety_time_desc: "Prevents double counting. System ignores detections for this time after crossing line.",
+                camera_title: "Twin ROI Camera",
+                btn_calibrate: "AUTO CALIBRATE",
+                video_status_init: "Start camera to setup lanes",
+                video_status_ready: "CAMERA ACTIVE - SYSTEM READY",
+                video_status_off: "Camera off.",
+                calibrating_title: "Calibrating Sensors", calibrating_desc: "Keep track clear",
+                false_start: "FALSE START!",
+                flag_yellow: "YELLOW FLAG",
+                telemetry_title: "LIVE TELEMETRY",
+                best_lap: "BEST LAP", last_lap: "LAST", avg_time: "AVG", speed: "SPEED",
+                graph_title: "Race Times",
+                tut_title: "Quick Guide", tut_subtitle: "Setup in 4 steps",
+                tut_step1_title: "1. FIXED CAMERA:", tut_step1_desc: "Focus track with your device.",
+                tut_step2_title: "2. SENSORS:", tut_step2_desc: "Drag squares over each lane.",
+                tut_step3_title: "3. CALIBRATE:", tut_step3_desc: "With EMPTY track, click AUTO CALIBRATE.",
+                tut_step4_title: "4. TEST:", tut_step4_desc: "Pass car by hand. If TEST OK appears, ready.",
+                tut_btn: "GOT IT, LET'S RACE!",
+                history_title: "Race History",
+                col_date: "DATE", col_winner: "WINNER", col_time: "TIME",
+                no_history: "No records saved.", clear_history: "Clear All",
+                race_finished: "Race Finished!",
+                winner: "Winner:", completed: "Completed!",
+                total: "Total:", best: "Best:", avg: "Avg:", speed_avg: "Avg Spd:",
+                export_btn: "EXPORT DATA (CSV)", restart_btn: "RESTART RACE",
+                // Voice
+                voice_ready: "Drivers ready.",
+                voice_false_start: "False start.",
+                voice_record: "Fastest lap for ",
+                voice_5_left: "5 laps to go.",
+                voice_last_lap: "Final lap!",
+                voice_winner: "Victory for ",
+                voice_completed: "Race completed",
+                voice_calibrated: "Sensors calibrated."
+            },
+            fr: {
+                start_race: "DÉMARRER", config: "CONFIG", reset_race: "RÉINIT.",
+                pause: "PAUSE", resume: "REPRENDRE",
+                history_btn: "Historique",
+                global_time: "TEMPS GLOBAL",
+                player_1: "JOUEUR 1 (OR)", player_2: "JOUEUR 2 (CUIVRE)",
+                config_title: "Configuration",
+                language_label: "Langue",
+                game_mode_label: "Mode de Jeu",
+                mode_2p: "🏁 2 JOUEURS (Duel)", mode_1p: "⏱️ 1 JOUEUR (Chrono)",
+                name_label: "Nom", car_label: "Voiture", sensitivity_label: "SENSIBILITÉ IA",
+                sound_p1: "Son P1", sound_p2: "Son P2",
+                track_length_label: "Longueur Piste (m)", laps_label: "Tours",
+                race_condition_label: "Type de Course",
+                condition_laps: "Tours", condition_time: "Temps (Endurance)",
+                voice_comments: "Commentaires Vocaux:",
+                safety_time_label: "Temps Sécurité (IA):",
+                safety_time_desc: "Évite le double comptage. Le système ignore les détections pendant ce temps.",
+                camera_title: "Caméra Twin ROI",
+                btn_calibrate: "AUTO CALIBRAGE",
+                video_status_init: "Démarrer caméra pour configurer",
+                video_status_ready: "CAMÉRA ACTIVE - SYSTÈME PRÊT",
+                video_status_off: "Caméra éteinte.",
+                calibrating_title: "Calibrage Capteurs", calibrating_desc: "Gardez la piste vide",
+                false_start: "FAUX DÉPART!",
+                flag_yellow: "DRAPEAU JAUNE",
+                telemetry_title: "TÉLÉMÉTRIE EN DIRECT",
+                best_lap: "MEILLEUR TOUR", last_lap: "DERNIER", avg_time: "MOYENNE", speed: "VITESSE",
+                graph_title: "Temps de Course",
+                tut_title: "Guide Rapide", tut_subtitle: "Config en 4 étapes",
+                tut_step1_title: "1. CAMÉRA FIXE:", tut_step1_desc: "Visez la piste avec votre appareil.",
+                tut_step2_title: "2. CAPTEURS:", tut_step2_desc: "Glissez les carrés sur chaque voie.",
+                tut_step3_title: "3. CALIBRER:", tut_step3_desc: "Piste VIDE, cliquez AUTO CALIBRAGE.",
+                tut_step4_title: "4. TEST:", tut_step4_desc: "Passez une voiture à la main. Si TEST OK, prêt.",
+                tut_btn: "C'EST PARTI !",
+                history_title: "Historique Courses",
+                col_date: "DATE", col_winner: "VAINQUEUR", col_time: "TEMPS",
+                no_history: "Aucun enregistrement.", clear_history: "Tout Effacer",
+                race_finished: "Course Terminée!",
+                winner: "Vainqueur:", completed: "Terminé!",
+                total: "Total:", best: "Meilleur:", avg: "Moy:", speed_avg: "Vit. Moy:",
+                export_btn: "EXPORTER (CSV)", restart_btn: "RECOMMENCER",
+                // Voice
+                voice_ready: "Pilotes prêts.",
+                voice_false_start: "Faux départ.",
+                voice_record: "Meilleur tour pour ",
+                voice_5_left: "Il reste 5 tours.",
+                voice_last_lap: "Dernier tour!",
+                voice_winner: "Victoire pour ",
+                voice_completed: "Course terminée",
+                voice_calibrated: "Capteurs calibrés."
+            }
+        };
+
+        // --- VARIABLES ---
+        const videoElement = document.getElementById('webcam-feed');
+        const videoContainer = document.getElementById('video-container');
+        const canvas = document.getElementById('video-canvas');
+        
+        // UI Elements
+        const startRaceBtn = document.getElementById('start-race-btn');
+        const resetRaceBtn = document.getElementById('reset-race-btn');
+        const configPanel = document.getElementById('config-panel');
+        const centralConfigBtn = document.getElementById('central-config-btn');
+        const calibrateBtn = document.getElementById('calibrate-btn');
+        const calibOverlay = document.getElementById('calib-overlay');
+        const pauseRaceBtn = document.getElementById('pause-race-btn');
+        const pauseIcon = document.getElementById('pause-icon');
+        const playIcon = document.getElementById('play-icon');
+        const pauseText = document.getElementById('pause-text');
+        
+        const trackLengthInput = document.getElementById('track-length-input');
+        const lapLimitSelect = document.getElementById('lap-limit-select');
+        const safetyTimeSelect = document.getElementById('safety-time-select');
+        const voiceToggle = document.getElementById('voice-toggle');
+        const recordNotification = document.getElementById('record-notification');
+        const cameraOnBtn = document.getElementById('camera-on-btn');
+        const cameraOffBtn = document.getElementById('camera-off-btn');
+        const videoStatus = document.getElementById('video-status');
+        const falseStartAlert = document.getElementById('false-start-alert');
+        const falseStartPlayerName = document.getElementById('false-start-player');
+        const exportExcelBtn = document.getElementById('export-excel-btn');
+        // helpBtn eliminado
+        const gameModeSelect = document.getElementById('game-mode-select'); 
+        const languageSelect = document.getElementById('language-select');
+        const raceConditionSelect = document.getElementById('race-condition-select'); // NEW
+        const timeLimitSelect = document.getElementById('time-limit-select'); // NEW
+        const yellowFlagOverlay = document.getElementById('yellow-flag-overlay'); // NEW
+        
+        // Tutorial
+        const tutorialModal = document.getElementById('tutorialModal');
+        const closeTutorialBtn = document.getElementById('close-tutorial-btn');
+        
+        // Audio
+        const synth = new Tone.Synth().toDestination();
+        const polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+
+        // Estado
+        let cameraStream = null;
+        let isProcessing = false;
+        let isRaceActive = false;
+        let isDetectionReady = false;
+        let isCountdown = false;
+        let raceAborted = false;
+        let isCalibrating = false;
+        let raceStartTime = 0;
+        let raceIntervalId = null;
+        let totalLapsTarget = 10;
+        let blindTimeMs = 3000; 
+        
+        let activePlayers = 2;
+        let currentLang = 'es';
+        let raceMode = 'laps'; // 'laps' or 'time'
+        let raceDurationTarget = 0; // ms
+
+        // PAUSE STATE
+        let isPaused = false;
+        let pauseStartTimestamp = 0;
+        
+        const players = [
+            {
+                id: 1,
+                nameId: 'p1-name', carId: 'p1-car',
+                roiId: 'roi-p1', valId: 'val-p1', msgId: 'msg-p1',
+                lapCountId: 'p1-lap-count', currentLapId: 'p1-current-lap',
+                bestLapId: 'p1-best-lap', lastLapId: 'p1-last-lap', avgSpeedId: 'p1-avg-speed',
+                avgTimeId: 'p1-avg-time', gapId: 'p1-gap',
+                thresholdId: 'p1-threshold', thresholdDispId: 'p1-threshold-disp',
+                soundId: 'p1-sound',
+                
+                // State for game
+                laps: 0, lapHistory: [], bestLap: Infinity, lapStartTime: 0, lastRecordTime: 0,
+                totalTime: 0, isBlocked: false, finished: false,
+                hasCrossedStart: false, // FLAG for first crossing logic
+                
+                // Smart Detection State
+                sensitivity: 20, // Delta threshold
+                baseBrightness: null,
+                soundTone: "C5"
+            },
+            {
+                id: 2,
+                nameId: 'p2-name', carId: 'p2-car',
+                roiId: 'roi-p2', valId: 'val-p2', msgId: 'msg-p2',
+                lapCountId: 'p2-lap-count', currentLapId: 'p2-current-lap',
+                bestLapId: 'p2-best-lap', lastLapId: 'p2-last-lap', avgSpeedId: 'p2-avg-speed',
+                avgTimeId: 'p2-avg-time', gapId: 'p2-gap',
+                thresholdId: 'p2-threshold', thresholdDispId: 'p2-threshold-disp',
+                soundId: 'p2-sound',
+                
+                // State for game
+                laps: 0, lapHistory: [], bestLap: Infinity, lapStartTime: 0, lastRecordTime: 0,
+                totalTime: 0, isBlocked: false, finished: false,
+                hasCrossedStart: false, // FLAG for first crossing logic
+                
+                // Smart Detection State
+                sensitivity: 20,
+                baseBrightness: null,
+                soundTone: "G5"
+            }
+        ];
+        
+        // --- TRANSLATION LOGIC ---
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            
+            // Update elements with data-lang-key
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                if(t[key]) el.textContent = t[key];
+                // Handle option text manually if needed for selects that are dynamic
+                if (el.tagName === 'OPTION' && t[key]) el.text = t[key];
+            });
+            
+            // Dynamic Updates
+            // Video Status
+            if (isProcessing) {
+                videoStatus.textContent = t.video_status_ready;
+            } else {
+                videoStatus.textContent = t.video_status_init;
+            }
+            
+            // Pause Button
+            pauseText.textContent = isPaused ? t.resume : t.pause;
+            
+            // Save preference
+            localStorage.setItem('krono_lang', lang);
+        }
+        
+        languageSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+
+        function speak(textKey, suffix = "") {
+            if (!voiceToggle.checked) return;
+            const t = translations[currentLang];
+            let msgText = t[textKey] || textKey; // Fallback to key if not found (for dynamic names)
+            msgText += suffix;
+            
+            const utter = new SpeechSynthesisUtterance(msgText);
+            // Set voice language
+            if (currentLang === 'es') utter.lang = 'es-ES';
+            else if (currentLang === 'en') utter.lang = 'en-US';
+            else if (currentLang === 'fr') utter.lang = 'fr-FR';
+            
+            utter.rate = 1.1;
+            window.speechSynthesis.speak(utter);
+        }
+
+        // --- GAME MODE LOGIC ---
+        function setGameMode(mode) {
+            activePlayers = parseInt(mode);
+            
+            const p2Config = document.getElementById('p2-config-block');
+            const p2TopStats = document.getElementById('p2-top-stats');
+            const p2Roi = document.getElementById('roi-p2');
+            const p2Telemetry = document.getElementById('p2-telemetry-col');
+            const topGrid = document.getElementById('top-stats-grid');
+            const telemetryGrid = document.getElementById('telemetry-grid');
+            
+            if (activePlayers === 1) {
+                // Solo Mode
+                p2Config.style.display = 'none';
+                p2TopStats.style.display = 'none';
+                p2Roi.style.display = 'none';
+                p2Telemetry.style.display = 'none';
+                
+                topGrid.classList.remove('grid-cols-2', 'divide-x-2');
+                topGrid.classList.add('grid-cols-1');
+                
+                telemetryGrid.style.gridTemplateColumns = '1fr';
+            } else {
+                // Duel Mode
+                p2Config.style.display = 'block';
+                p2TopStats.style.display = 'block';
+                if (isProcessing) p2Roi.style.display = 'block'; // Only show ROI if cam active
+                p2Telemetry.style.display = 'flex'; // It's flex col normally
+                
+                topGrid.classList.add('grid-cols-2', 'divide-x-2');
+                topGrid.classList.remove('grid-cols-1');
+                
+                telemetryGrid.style.gridTemplateColumns = '1fr 1fr';
+            }
+        }
+        
+        gameModeSelect.addEventListener('change', (e) => {
+            setGameMode(e.target.value);
+        });
+        
+        // --- RACE CONDITION LOGIC ---
+        raceConditionSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'laps') {
+                lapLimitSelect.classList.remove('hidden');
+                timeLimitSelect.classList.add('hidden');
+            } else {
+                lapLimitSelect.classList.add('hidden');
+                timeLimitSelect.classList.remove('hidden');
+            }
+        });
+
+        // --- HELPER: ADJUST SENSITIVITY ---
+        window.adjT = function(pId, delta) {
+            const p = players[pId-1];
+            let val = parseInt(document.getElementById(p.thresholdId).value);
+            val = Math.max(5, Math.min(100, val + delta));
+            document.getElementById(p.thresholdId).value = val;
+            updateThreshold(pId);
+        }
+
+        function updateThreshold(pId) {
+            const p = players[pId-1];
+            const val = document.getElementById(p.thresholdId).value;
+            p.sensitivity = parseInt(val);
+            document.getElementById(p.thresholdDispId).textContent = val;
+        }
+
+        // --- CAMERA ---
+        async function startWebcam() {
+            if (cameraStream) return;
+            videoStatus.textContent = 'INICIANDO...';
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).catch(() => navigator.mediaDevices.getUserMedia({ video: true }));
+
+                videoElement.srcObject = cameraStream;
+                videoElement.onloadedmetadata = () => {
+                    videoElement.play();
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    isProcessing = true;
+                    processVideo();
+                    
+                    // Show ROIs based on game mode
+                    document.getElementById('roi-p1').style.display = 'block';
+                    if (activePlayers === 2) {
+                        document.getElementById('roi-p2').style.display = 'block';
+                    }
+                    
+                    const t = translations[currentLang];
+                    videoStatus.textContent = t.video_status_ready;
+                    videoStatus.className = "text-center text-sm mt-2 text-green-600 font-bold uppercase";
+                    cameraOnBtn.disabled = true;
+                    cameraOffBtn.disabled = false;
+                    calibrateBtn.disabled = false;
+                };
+            } catch (err) {
+                videoStatus.textContent = 'Error: ' + err.name;
+                videoStatus.className = "text-center text-sm mt-2 text-red-600";
+            }
+        }
+
+        function stopWebcam() {
+            if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+            cameraStream = null; isProcessing = false; videoElement.srcObject = null;
+            document.querySelectorAll('.movable-rectangle').forEach(el => el.style.display = 'none');
+            cameraOnBtn.disabled = false; cameraOffBtn.disabled = true;
+            calibrateBtn.disabled = true;
+            const t = translations[currentLang];
+            videoStatus.textContent = t.video_status_off; 
+            videoStatus.className = "text-amber-900 text-center text-sm mt-2";
+        }
+
+        // --- FAST DETECTION LOGIC ---
+        function getRoiBrightness(roi) {
+            const vw = videoElement.videoWidth; const vh = videoElement.videoHeight;
+            if (!vw || !vh) return 0;
+            const rs = roi.style;
+            const x = Math.floor(vw * (parseFloat(rs.left)||0)/100);
+            const y = Math.floor(vh * (parseFloat(rs.top)||0)/100);
+            const w = Math.ceil(vw * (parseFloat(rs.width)||10)/100);
+            const h = Math.ceil(vh * (parseFloat(rs.height)||10)/100);
+            
+            // Optimization: Only get the small patch data
+            const ctx = canvas.getContext('2d', {willReadFrequently:true});
+            ctx.drawImage(videoElement, x, y, w, h, 0, 0, w, h);
+            
+            try {
+                const d = ctx.getImageData(0,0,w,h).data;
+                let t = 0; 
+                // Sample every 4th pixel for speed, adequate for brightness avg
+                for(let i=0; i<d.length; i+=16) { 
+                    t+=(d[i]+d[i+1]+d[i+2]); // Sum RGB
+                }
+                return (t/3) / (d.length/16);
+            } catch(e){return 0;}
+        }
+
+        function processVideo() {
+            if (!isProcessing) return;
+            
+            const now = Date.now();
+
+            players.forEach(p => {
+                // SKIP PLAYER 2 IF MODE IS 1
+                if (p.id > activePlayers) return;
+
+                const roi = document.getElementById(p.roiId);
+                const currentBri = getRoiBrightness(roi);
+                document.getElementById(p.valId).textContent = currentBri.toFixed(0);
+                
+                // Initialize baseline if needed
+                if (p.baseBrightness === null) p.baseBrightness = currentBri;
+
+                // Smart Detection Logic (Differential)
+                const diff = Math.abs(currentBri - p.baseBrightness);
+                const crossed = diff > p.sensitivity;
+
+                if (crossed) {
+                    roi.classList.add('roi-detected');
+                } else {
+                    roi.classList.remove('roi-detected');
+                    // Slow adaptation to ambient light changes if not crossed
+                    // This prevents the "ghost" of a car from becoming the new background
+                    if (!isCalibrating) {
+                        p.baseBrightness = (p.baseBrightness * 0.95) + (currentBri * 0.05);
+                    }
+                }
+
+                // Logic Dispatch
+                if (!isCalibrating) {
+                    
+                    // 0. Pre-Race Test Mode (Cuando no hay carrera activa)
+                    if (!isRaceActive && !isCountdown && crossed && !isPaused) {
+                         document.getElementById(p.msgId).textContent = "TEST OK";
+                    } else if (!isRaceActive) {
+                         document.getElementById(p.msgId).textContent = "";
+                    }
+
+                    // 1. False Start
+                    if (isCountdown && !raceAborted) {
+                         if (crossed && !p.isBlocked) {
+                             handleFalseStart(p);
+                             p.isBlocked = true;
+                         }
+                    }
+                    // 2. Normal Race
+                    else if (isRaceActive && isDetectionReady && !p.finished && !isPaused) {
+                        
+                        // --- LÓGICA DE TIEMPO CIEGO ---
+                        // Si estamos en el periodo de "cálculo IA", ignoramos todo
+                        // Usamos la variable dinámica blindTimeMs
+                        if (now - p.lastRecordTime < blindTimeMs) {
+                             // Do nothing, just wait.
+                             // La UI ya muestra el bloqueo (roi-locked)
+                             return;
+                        }
+
+                        if (crossed && !p.isBlocked) {
+                            p.isBlocked = true;
+                            // KEY CHANGE: Check if first crossing
+                            if (!p.hasCrossedStart) {
+                                // First Crossing Logic - IGNORE TIME, JUST START CLOCK
+                                p.hasCrossedStart = true;
+                                p.lapStartTime = Date.now(); // Reset Lap Timer
+                                p.lastRecordTime = Date.now(); // IMPORTANT: Set debounce time now
+                                activateBlindTime(p); // LOCK
+                                synth.triggerAttackRelease(p.soundTone, "0.1");
+                                document.getElementById(p.msgId).textContent = "GO!";
+                            } else {
+                                // Subsequent Crossings Logic
+                                document.getElementById(p.msgId).textContent = "OK";
+                                recordLap(p);
+                            }
+                        } else if (!crossed && p.isBlocked) {
+                            p.isBlocked = false;
+                            // Clear momentary message after leaving sensor
+                            if(isRaceActive) setTimeout(() => document.getElementById(p.msgId).textContent = "", 500);
+                        }
+                    }
+                    
+                    // General Debounce Reset
+                    if (!crossed && p.isBlocked && !isCountdown) {
+                        p.isBlocked = false;
+                    }
+                }
+            });
+            requestAnimationFrame(processVideo);
+        }
+        
+        // --- VISUAL LOCK HELPER ---
+        function activateBlindTime(p) {
+            const roiEl = document.getElementById(p.roiId);
+            roiEl.classList.add('roi-locked');
+            // Usamos blindTimeMs dinámico
+            setTimeout(() => {
+                roiEl.classList.remove('roi-locked');
+            }, blindTimeMs);
+        }
+
+        // --- AUTO CALIBRATION ---
+        async function runAutoCalibration() {
+            if (!isProcessing) return;
+            isCalibrating = true;
+            calibOverlay.classList.add('active');
+            
+            // 1. Measure Baseline
+            let samples = 0;
+            const p1Stats = { sum: 0, min: 255, max: 0 };
+            const p2Stats = { sum: 0, min: 255, max: 0 };
+            
+            const framesToRead = 60; // Approx 1-2 seconds
+            
+            const readFrame = () => {
+                const b1 = getRoiBrightness(document.getElementById('roi-p1'));
+                if (activePlayers === 2) {
+                     const b2 = getRoiBrightness(document.getElementById('roi-p2'));
+                     p2Stats.sum += b2; p2Stats.min = Math.min(p2Stats.min, b2); p2Stats.max = Math.max(p2Stats.max, b2);
+                }
+                
+                p1Stats.sum += b1; p1Stats.min = Math.min(p1Stats.min, b1); p1Stats.max = Math.max(p1Stats.max, b1);
+                
+                samples++;
+                if (samples < framesToRead) {
+                    requestAnimationFrame(readFrame);
+                } else {
+                    finishCalibration(p1Stats, p2Stats);
+                }
+            };
+            
+            readFrame();
+        }
+        
+        function finishCalibration(s1, s2) {
+            // Set Base Brightness
+            players[0].baseBrightness = s1.sum / 60;
+            const noise1 = Math.max(s1.max - players[0].baseBrightness, players[0].baseBrightness - s1.min);
+            const safeMargin = 15; // Minimum diff required
+            const newSens1 = Math.max(safeMargin, Math.ceil(noise1 * 1.5));
+            document.getElementById('p1-threshold').value = newSens1;
+            updateThreshold(1);
+            
+            if (activePlayers === 2) {
+                players[1].baseBrightness = s2.sum / 60;
+                const noise2 = Math.max(s2.max - players[1].baseBrightness, players[1].baseBrightness - s2.min);
+                const newSens2 = Math.max(safeMargin, Math.ceil(noise2 * 1.5));
+                document.getElementById('p2-threshold').value = newSens2;
+                updateThreshold(2);
+            }
+            
+            isCalibrating = false;
+            calibOverlay.classList.remove('active');
+            
+            speak('voice_calibrated');
+        }
+
+        function handleFalseStart(player) {
+            raceAborted = true;
+            isCountdown = false;
+            polySynth.triggerAttackRelease(["C2", "F#2", "C3"], "1");
+            const pName = document.getElementById(player.nameId).value;
+            falseStartPlayerName.textContent = pName;
+            falseStartAlert.classList.add('show');
+            
+            speak('voice_false_start', " " + pName);
+            
+            resetRaceBtn.disabled = false;
+            document.querySelectorAll('.light').forEach(l => l.className = "light");
+        }
+
+        // --- PAUSE LOGIC ---
+        function togglePause() {
+            if (!isRaceActive && !isPaused) return; // Cannot pause if not racing
+            
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                // START PAUSE
+                isRaceActive = false; // Stop processing detections
+                clearInterval(raceIntervalId); // Stop UI updates
+                pauseStartTimestamp = Date.now();
+                
+                pauseIcon.classList.add('hidden');
+                playIcon.classList.remove('hidden');
+                
+                const t = translations[currentLang];
+                pauseText.textContent = t.resume;
+                
+                document.getElementById('race-time').classList.add('animate-pulse'); // Visual feedback
+                
+                // Show Yellow Flag
+                yellowFlagOverlay.classList.remove('hidden');
+                
+            } else {
+                // END PAUSE (RESUME)
+                const pauseDuration = Date.now() - pauseStartTimestamp;
+                
+                // SHIFT TIME FORWARD
+                raceStartTime += pauseDuration;
+                players.forEach(p => {
+                    if (p.hasCrossedStart) {
+                        p.lapStartTime += pauseDuration;
+                        p.lastRecordTime += pauseDuration;
+                    }
+                });
+                
+                isRaceActive = true;
+                pauseIcon.classList.remove('hidden');
+                playIcon.classList.add('hidden');
+                
+                const t = translations[currentLang];
+                pauseText.textContent = t.pause;
+                
+                document.getElementById('race-time').classList.remove('animate-pulse');
+                
+                // Hide Yellow Flag
+                yellowFlagOverlay.classList.add('hidden');
+                
+                startTimers(); // Restart interval
+            }
+        }
+
+        // --- RACE LOGIC ---
+        function formatTime(ms) {
+            if (ms === Infinity || ms <= 0) return "--.---";
+            const min = Math.floor(ms/60000);
+            const sec = Math.floor((ms%60000)/1000);
+            const mil = Math.floor(ms%1000);
+            return `${min>0?min+':':''}${String(sec).padStart(2,'0')}.${String(mil).padStart(3,'0')}`;
+        }
+
+        function startRace() {
+            configPanel.classList.remove('open');
+            startRaceBtn.disabled = true; resetRaceBtn.disabled = true; pauseRaceBtn.disabled = true;
+            falseStartAlert.classList.remove('show');
+            yellowFlagOverlay.classList.add('hidden'); // Ensure flag is hidden on start
+            
+            // RESET PAUSE STATE
+            isPaused = false;
+            pauseIcon.classList.remove('hidden');
+            playIcon.classList.add('hidden');
+            
+            const t = translations[currentLang];
+            pauseText.textContent = t.pause;
+            
+            // SETUP MODE
+            raceMode = raceConditionSelect.value;
+            
+            if (raceMode === 'laps') {
+                totalLapsTarget = lapLimitSelect.value==='Infinity'?Infinity:parseInt(lapLimitSelect.value);
+            } else {
+                // Time mode logic
+                totalLapsTarget = Infinity; // No lap limit
+                raceDurationTarget = parseInt(timeLimitSelect.value) * 60000; // Minutes to ms
+            }
+            
+            // LEER EL TIEMPO DE SEGURIDAD
+            blindTimeMs = parseInt(safetyTimeSelect.value);
+
+            players.forEach(p => {
+                p.soundTone = document.getElementById(p.soundId).value;
+                p.laps=0; p.lapHistory=[]; p.bestLap=Infinity; p.totalTime=0; p.lastRecordTime=0; 
+                p.finished=false; p.isBlocked=false; 
+                p.hasCrossedStart=false; // RESET FLAG
+                
+                updatePlayerUI(p);
+                document.getElementById(p.currentLapId).textContent = "ESPERANDO...";
+                document.getElementById(p.avgTimeId).textContent = "--.---";
+                document.getElementById(p.gapId).textContent = "--";
+                
+                // Clear any leftover lock visual
+                document.getElementById(p.roiId).classList.remove('roi-locked');
+            });
+            
+            // Set initial timer text based on mode
+            if (raceMode === 'time') {
+                document.getElementById('race-time').textContent = formatTime(raceDurationTarget);
+            } else {
+                document.getElementById('race-time').textContent = "00:00.000";
+            }
+            
+            drawGraph();
+
+            const lights = [1,2,3,4,5].map(i=>document.getElementById('light-'+i));
+            lights.forEach(l=>l.className="light");
+
+            (async()=>{
+                isCountdown = true; raceAborted = false;
+                speak('voice_ready');
+                
+                for(let i=0;i<5;i++){
+                    if(raceAborted) return;
+                    lights[i].classList.add('red'); synth.triggerAttackRelease("C4","0.1");
+                    await new Promise(r=>setTimeout(r,1000));
+                }
+                
+                if(raceAborted) return;
+                await new Promise(r=>setTimeout(r, Math.random()*1500+500));
+                
+                if(raceAborted) return;
+                isCountdown = false;
+                lights.forEach(l=>{l.classList.remove('red'); l.classList.add('green');});
+                polySynth.triggerAttackRelease(["C5","G5"],"0.5");
+                
+                isRaceActive=true; isDetectionReady=true; 
+                resetRaceBtn.disabled=false;
+                pauseRaceBtn.disabled=false; // ENABLE PAUSE
+                
+                raceStartTime=Date.now();
+                players.forEach(p=>p.lapStartTime=raceStartTime);
+                startTimers();
+            })();
+        }
+
+        function startTimers() {
+            if(raceIntervalId) clearInterval(raceIntervalId);
+            raceIntervalId = setInterval(()=>{
+                const now = Date.now();
+                
+                // MAIN TIMER LOGIC
+                if (raceMode === 'time') {
+                    // Count down
+                    let remaining = raceDurationTarget - (now - raceStartTime);
+                    if (remaining <= 0) {
+                        remaining = 0;
+                        // Trigger End Race if time expired
+                        if (isRaceActive) endRace();
+                    }
+                    document.getElementById('race-time').textContent = formatTime(remaining);
+                } else {
+                    // Count up
+                    document.getElementById('race-time').textContent = formatTime(now - raceStartTime);
+                }
+
+                players.forEach(p => {
+                    // Solo actualizar si el jugador está activo
+                    if(p.id <= activePlayers && !p.finished) {
+                        // Only show time if race started for player
+                        if (p.hasCrossedStart) {
+                            const elap = now - p.lapStartTime;
+                            const sec = Math.floor(elap/1000);
+                            const ms = String(elap%1000).padStart(3,'0');
+                            document.getElementById(p.currentLapId).textContent = `${sec}.${ms}`;
+                        }
+                    }
+                });
+                if (activePlayers === 2) updateGaps();
+            }, 40);
+        }
+
+        function recordLap(p) {
+            const now = Date.now();
+            if (now - p.lastRecordTime < blindTimeMs) return; 
+            
+            // DOUBLE CHECK: If logic failed and this is somehow first crossing, abort
+            if (!p.hasCrossedStart) {
+                 p.hasCrossedStart = true; p.lapStartTime = now; p.lastRecordTime = now; activateBlindTime(p); return;
+            }
+
+            p.lastRecordTime = now;
+            activateBlindTime(p); // LOCK SENSORS
+
+            const lapTime = now - p.lapStartTime;
+            p.lapHistory.push(lapTime);
+            p.laps++;
+            p.totalTime = now - raceStartTime; // Update total run time for tie-breaking
+            p.lapStartTime = now;
+            
+            let isNewRecord = false;
+            if (lapTime < p.bestLap) {
+                p.bestLap = lapTime;
+                showNotification(`RÉCORD P${p.id}!`);
+                isNewRecord = true;
+            }
+
+            synth.triggerAttackRelease(p.soundTone, "0.1");
+            updatePlayerUI(p);
+            
+            const name = document.getElementById(p.nameId).value;
+            
+            // --- CAMBIO: SOLO HABLA SI ES RÉCORD ---
+            if (isNewRecord) {
+                const lapTimeSec = (lapTime/1000).toFixed(2);
+                speak('voice_record', name + "! " + lapTimeSec);
+            }
+            // ---------------------------------------
+
+            // Only check lap based limits in Laps mode
+            if(raceMode === 'laps' && totalLapsTarget !== Infinity) {
+                const remaining = totalLapsTarget - p.laps;
+                if(remaining === 5) {
+                    speak('voice_5_left', " " + name);
+                }
+                if(remaining === 1) { 
+                    speak('voice_last_lap');
+                }
+                
+                if(p.laps >= totalLapsTarget) {
+                    p.finished = true;
+                    document.getElementById(p.lapCountId).textContent = "FIN";
+                    document.getElementById(p.currentLapId).textContent = "META";
+                    polySynth.triggerAttackRelease(["E6"], "0.2");
+                    
+                    // Check if race ends
+                    if (activePlayers === 1 && players[0].finished) {
+                         endRace();
+                    } else if (activePlayers === 2 && players.every(pl=>pl.finished)) {
+                         endRace();
+                    }
+                }
+            }
+            drawGraph();
+        }
+
+        function updatePlayerUI(p) {
+            // Display depends on mode
+            if (raceMode === 'time') {
+                 document.getElementById(p.lapCountId).textContent = `V: ${p.laps}`;
+            } else {
+                 document.getElementById(p.lapCountId).textContent = `V: ${p.laps} / ${totalLapsTarget===Infinity?'∞':totalLapsTarget}`;
+            }
+            
+            document.getElementById(p.bestLapId).textContent = formatTime(p.bestLap);
+            const last = p.lapHistory.length>0 ? p.lapHistory[p.lapHistory.length-1] : 0;
+            document.getElementById(p.lastLapId).textContent = formatTime(last);
+            
+            if(p.laps>0) {
+                const tot = p.lapHistory.reduce((a,b)=>a+b,0);
+                const avg = tot/p.laps;
+                const len = parseFloat(trackLengthInput.value);
+                const spd = (len/(avg/1000))*3.6;
+                document.getElementById(p.avgSpeedId).textContent = spd.toFixed(1) + " Km/h";
+                document.getElementById(p.avgTimeId).textContent = formatTime(avg);
+            }
+        }
+        
+        function updateGaps() {
+             const now = Date.now();
+             const t1 = players[0].finished ? players[0].totalTime : (players[0].laps > 0 ? (players[0].lapHistory.reduce((a,b)=>a+b,0) + (now - players[0].lapStartTime)) : 0);
+             const t2 = players[1].finished ? players[1].totalTime : (players[1].laps > 0 ? (players[1].lapHistory.reduce((a,b)=>a+b,0) + (now - players[1].lapStartTime)) : 0);
+             
+             if (players[0].laps > 0 && players[1].laps > 0) {
+                 const diff = t1 - t2;
+                 const diffSec = (Math.abs(diff)/1000).toFixed(1);
+                 
+                 // Logic change for Time Mode: Whoever has MORE LAPS is winning
+                 if (raceMode === 'time') {
+                     if (players[0].laps > players[1].laps) {
+                         document.getElementById(players[0].gapId).textContent = "LIDER";
+                         document.getElementById(players[0].gapId).className = "telemetry-data font-arial text-green-700";
+                         document.getElementById(players[1].gapId).textContent = "-" + (players[0].laps - players[1].laps) + " L";
+                         document.getElementById(players[1].gapId).className = "telemetry-data font-arial text-red-700";
+                         return;
+                     } else if (players[1].laps > players[0].laps) {
+                         document.getElementById(players[1].gapId).textContent = "LIDER";
+                         document.getElementById(players[1].gapId).className = "telemetry-data font-arial text-green-700";
+                         document.getElementById(players[0].gapId).textContent = "-" + (players[1].laps - players[0].laps) + " L";
+                         document.getElementById(players[0].gapId).className = "telemetry-data font-arial text-red-700";
+                         return;
+                     }
+                     // If laps equal, fall back to standard time gap logic below
+                 }
+
+                 if (diff < 0) {
+                     document.getElementById(players[0].gapId).textContent = "LIDER";
+                     document.getElementById(players[0].gapId).className = "telemetry-data font-arial text-green-700";
+                     document.getElementById(players[1].gapId).textContent = "+" + diffSec;
+                     document.getElementById(players[1].gapId).className = "telemetry-data font-arial text-red-700";
+                 } else {
+                     document.getElementById(players[1].gapId).textContent = "LIDER";
+                     document.getElementById(players[1].gapId).className = "telemetry-data font-arial text-green-700";
+                     document.getElementById(players[0].gapId).textContent = "+" + diffSec;
+                     document.getElementById(players[0].gapId).className = "telemetry-data font-arial text-red-700";
+                 }
+             }
+        }
+
+        function endRace() {
+            isRaceActive = false; clearInterval(raceIntervalId);
+            pauseRaceBtn.disabled = true; // DISABLE PAUSE
+            
+            const p1 = players[0]; const p2 = players[1];
+            let winner = null;
+            
+            if (activePlayers === 1) {
+                winner = p1; // Solo hay un ganador posible
+            } else {
+                if (raceMode === 'laps') {
+                    // Logic for Laps Mode
+                    if (p1.finished && p2.finished) winner = p1.totalTime < p2.totalTime ? p1 : p2;
+                    else if (p1.finished) winner = p1; else if (p2.finished) winner = p2;
+                    else winner = p1.laps > p2.laps ? p1 : p2;
+                } else {
+                    // Logic for Time Mode (Most laps wins)
+                    if (p1.laps !== p2.laps) {
+                        winner = p1.laps > p2.laps ? p1 : p2;
+                    } else {
+                        // Tie breaker: whoever reached that lap count faster (totalTime tracks last crossing)
+                        // Note: totalTime is only set on finish or calc on fly. In recordLap we set p.totalTime.
+                        // However, if neither finished "normally", totalTime might be just the timestamp.
+                        // Let's use the last recorded timestamp from lapHistory if totalTime isn't set?
+                        // Actually in recordLap I added p.totalTime = now - start.
+                        winner = p1.totalTime < p2.totalTime ? p1 : p2;
+                    }
+                }
+            }
+
+            // --- AJUSTE VISUAL DEL MODAL SEGÚN JUGADORES ---
+            const grid = document.getElementById('results-grid');
+            const p2Card = document.getElementById('p2-summary-card');
+
+            if (activePlayers === 1) {
+                // Modo 1 Jugador: Una columna, ocultar P2
+                grid.classList.remove('grid-cols-2');
+                grid.classList.add('grid-cols-1');
+                p2Card.classList.add('hidden');
+            } else {
+                // Modo 2 Jugadores: Dos columnas, mostrar P2
+                grid.classList.remove('grid-cols-1');
+                grid.classList.add('grid-cols-2');
+                p2Card.classList.remove('hidden');
+            }
+            // ------------------------------------------------
+
+            const wName = document.getElementById(winner.nameId).value;
+            const t = translations[currentLang];
+            document.getElementById('winner-text').textContent = activePlayers===1 ? t.completed : `${t.winner} ${wName}`;
+            
+            // Loop solo jugadores activos
+            players.forEach(p => {
+                if (p.id > activePlayers) return;
+                
+                const n = document.getElementById(p.nameId).value;
+                
+                // Fix for total time display in Time Mode if they didn't "finish" via lap limit
+                let totalT = p.finished ? p.totalTime : (p.lapHistory.length > 0 ? p.totalTime : 0);
+                
+                const lapCount = p.lapHistory.length;
+                const avgT = lapCount > 0 ? totalT / lapCount : 0;
+                const trackLen = parseFloat(trackLengthInput.value);
+                const avgSpd = avgT > 0 ? (trackLen / (avgT/1000)) * 3.6 : 0;
+
+                // Si es solo player, mostramos su nombre sin corona
+                const displayName = (activePlayers === 1) ? n : (n + (p===winner?" 👑":""));
+
+                // We need to ensure elements exist in modal too, assume standard IDs
+                const nameEl = document.getElementById(`modal-p${p.id}-name`);
+                if(nameEl) nameEl.textContent = displayName;
+                
+                document.getElementById(`modal-p${p.id}-total`).textContent = formatTime(totalT);
+                document.getElementById(`modal-p${p.id}-best`).textContent = formatTime(p.bestLap);
+                document.getElementById(`modal-p${p.id}-avg`).textContent = formatTime(avgT);
+                document.getElementById(`modal-p${p.id}-speed`).textContent = avgSpd.toFixed(1) + " km/h";
+
+                const ul = document.getElementById(`modal-p${p.id}-laps`);
+                ul.innerHTML = "";
+                p.lapHistory.forEach((lap, idx) => {
+                    const li = document.createElement('li');
+                    li.className = "flex justify-between border-b border-gray-100 last:border-0 py-1 font-arial"; // Force Arial in list
+                    const isBest = (lap === p.bestLap && p.bestLap !== Infinity); 
+                    li.innerHTML = `<span>V${idx+1}</span> <span class="${isBest ? 'text-green-700 font-bold' : ''}">${formatTime(lap)}</span>`;
+                    ul.appendChild(li);
+                });
+            });
+            
+            saveHistory(wName);
+            document.getElementById('resultsModal').classList.remove('hidden');
+            setTimeout(()=>document.getElementById('resultsModal').classList.add('open'),10);
+            
+            if (activePlayers === 1) speak('voice_completed');
+            else speak('voice_winner', wName);
+        }
+
+        function exportToExcel() {
+            const date = new Date().toLocaleString();
+            const winnerText = document.getElementById('winner-text').textContent;
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "KRONODUAL V.2.0 - REPORTE DE CARRERA\n\n";
+            csvContent += `Fecha:,${date}\n`;
+            csvContent += `${winnerText}\n\n`;
+            
+            players.forEach(p => {
+                if(p.id > activePlayers) return;
+                
+                const name = document.getElementById(p.nameId).value;
+                const car = document.getElementById(p.carId).value;
+                const totalTime = document.getElementById(`modal-p${p.id}-total`).textContent;
+                const bestLap = document.getElementById(`modal-p${p.id}-best`).textContent;
+                const avgSpeed = document.getElementById(`modal-p${p.id}-speed`).textContent;
+                
+                csvContent += `PILOTO ${p.id} (${p.id===1?'ORO':'COBRE'}),${name.toUpperCase()}\n`;
+                csvContent += `Coche:,${car}\n`;
+                csvContent += `Tiempo Total:,${totalTime}\n`;
+                csvContent += `Mejor Vuelta:,${bestLap}\n`;
+                csvContent += `Velocidad Media:,${avgSpeed}\n`;
+                csvContent += "VUELTA,TIEMPO\n";
+                
+                p.lapHistory.forEach((lap, index) => {
+                    csvContent += `${index + 1},${formatTime(lap)}\n`;
+                });
+                csvContent += "\n"; // Spacer between players
+            });
+
+            // 4. Create Download Link
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `krono_race_${Date.now()}.csv`);
+            document.body.appendChild(link); // Required for FF
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function drawGraph() {
+            const ctx = document.getElementById('lap-graph-canvas').getContext('2d');
+            const w = ctx.canvas.parentElement.offsetWidth;
+            ctx.canvas.width = w; ctx.canvas.height = 200;
+            const p1d = players[0].lapHistory; const p2d = players[1].lapHistory;
+            const maxL = Math.max(p1d.length, p2d.length);
+            
+            // Clean
+            ctx.clearRect(0,0,w,200);
+
+            // Draw Y-Axis Text
+            ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
+            ctx.fillText("TIEMPO (s)", 5, 10);
+            
+            if(maxL===0) {
+                 // Removed text drawing as requested
+                 return;
+            }
+
+            const all = [...p1d, ...(activePlayers===2 ? p2d : [])];
+            const maxT = Math.max(...all);
+            const pad = 30; const gh = 160; const gw = w - pad*2;
+            const bw = (gw / maxL) * 0.4;
+            
+            ctx.shadowBlur = 10;
+            for(let i=0; i<maxL; i++) {
+                const x = pad + i * (gw/maxL) + 10;
+                if(p1d[i]) {
+                    const h = (p1d[i]/maxT)*gh;
+                    ctx.fillStyle = '#ffd700'; 
+                    ctx.shadowColor = '#ffd700'; // Gold Glow
+                    ctx.fillRect(x, 180-h, bw, h);
+                }
+                if(activePlayers === 2 && p2d[i]) {
+                    const h = (p2d[i]/maxT)*gh;
+                    ctx.fillStyle = '#b87333'; // Copper color
+                    ctx.shadowColor = '#b87333'; // Copper Glow
+                    ctx.fillRect(x+bw, 180-h, bw, h);
+                }
+                ctx.shadowBlur = 0; // Reset for text
+                ctx.fillStyle='#aaa'; ctx.font='10px Arial'; ctx.textAlign='center';
+                ctx.fillText(i+1, x+bw, 195);
+            }
+        }
+        
+        function showNotification(txt) {
+            recordNotification.textContent = txt; recordNotification.classList.add('show');
+            setTimeout(()=>recordNotification.classList.remove('show'),2000);
+        }
+
+        // --- HISTORIAL ---
+        function saveHistory(winner) {
+            const rec = {
+                date: new Date().toLocaleString(),
+                winner: winner,
+                time: formatTime(players[0].totalTime), // Simplificado para historial basico
+                p1Best: formatTime(players[0].bestLap),
+                p2Best: activePlayers===2 ? formatTime(players[1].bestLap) : "N/A"
+            };
+            let hist = JSON.parse(localStorage.getItem('krono_twin_hist') || '[]');
+            hist.unshift(rec);
+            localStorage.setItem('krono_twin_hist', JSON.stringify(hist.slice(0, 50)));
+        }
+
+        function loadHistory() {
+            const hist = JSON.parse(localStorage.getItem('krono_twin_hist') || '[]');
+            const tbody = document.getElementById('full-history-body');
+            tbody.innerHTML = '';
+            if (hist.length === 0) {
+                document.getElementById('no-history-msg').classList.remove('hidden');
+            } else {
+                document.getElementById('no-history-msg').classList.add('hidden');
+                hist.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-amber-200 hover:bg-amber-100/50";
+                    tr.innerHTML = `<td class="p-2 text-xs">${r.date}</td><td class="p-2 font-bold text-green-800">${r.winner}</td><td class="p-2 font-arial">${r.time}</td><td class="p-2 text-blue-800 text-xs">${r.p1Best}</td><td class="p-2 text-red-800 text-xs">${r.p2Best}</td>`;
+                    tbody.appendChild(tr);
+                });
+            }
+            const m = document.getElementById('historyModal');
+            m.classList.remove('hidden'); setTimeout(()=>m.classList.add('open'),10);
+        }
+
+        // --- INIT EVENTS ---
+        document.getElementById('history-btn').onclick = loadHistory;
+        document.getElementById('close-history-btn').onclick = () => {
+             const m = document.getElementById('historyModal'); m.classList.remove('open');
+             setTimeout(()=>m.classList.add('hidden'),300);
+        };
+        document.getElementById('clear-history-btn').onclick = () => {
+            localStorage.removeItem('krono_twin_hist'); loadHistory();
+        };
+        document.getElementById('modal-restart-btn').onclick = () => {
+            document.getElementById('resultsModal').classList.remove('open');
+            setTimeout(()=>document.getElementById('resultsModal').classList.add('hidden'),300);
+            document.getElementById('race-time').textContent = "00:00.000";
+            isRaceActive=false; clearInterval(raceIntervalId); startRaceBtn.disabled=false;
+            pauseRaceBtn.disabled = true; // DISABLE PAUSE
+            isPaused = false;
+            yellowFlagOverlay.classList.add('hidden'); // Ensure hidden on restart
+        };
+        calibrateBtn.onclick = runAutoCalibration;
+        exportExcelBtn.onclick = exportToExcel;
+        pauseRaceBtn.onclick = togglePause;
+        
+        // Tutorial
+        closeTutorialBtn.onclick = () => {
+            tutorialModal.classList.remove('open');
+            // Guardamos que ya se ha visto
+            localStorage.setItem('krono_tutorial_seen', 'true');
+            // Sonido eliminado
+        };
+
+        // helpBtn onclick eliminado
+
+        // --- DRAG AND RESIZE LOGIC ---
+        let actRoi = null;
+        let isDrag = false;
+        let isResize = false;
+        let resizeHandle = null; 
+        let startX = 0, startY = 0;
+        let startLeft = 0, startTop = 0, startWidth = 0, startHeight = 0;
+
+        function getEventPos(e) { return e.touches ? e.touches[0] : e; }
+
+        function dragStart(e) {
+            const handle = e.target.closest('.resize-handle');
+            const roi = e.target.closest('.movable-rectangle');
+            if (!roi) return;
+            if (e.cancelable && !e.target.closest('input') && !e.target.closest('select')) e.preventDefault();
+            const pos = getEventPos(e);
+            startX = pos.clientX; startY = pos.clientY;
+            startLeft = roi.offsetLeft; startTop = roi.offsetTop;
+            startWidth = roi.offsetWidth; startHeight = roi.offsetHeight;
+            actRoi = roi;
+            if (handle) {
+                isResize = true;
+                resizeHandle = handle.classList.contains('handle-tl') ? 'tl' : 'br';
+                e.stopPropagation();
+            } else { isDrag = true; }
+        }
+
+        function dragMove(e) {
+            if (!isDrag && !isResize) return;
+            e.preventDefault();
+            const pos = getEventPos(e);
+            const dx = pos.clientX - startX; const dy = pos.clientY - startY;
+            const parentRect = videoContainer.getBoundingClientRect();
+            if (isDrag) {
+                let newLeft = startLeft + dx; let newTop = startTop + dy;
+                actRoi.style.left = (newLeft / parentRect.width) * 100 + '%';
+                actRoi.style.top = (newTop / parentRect.height) * 100 + '%';
+            } else if (isResize) {
+                if (resizeHandle === 'br') {
+                    let newW = Math.max(30, startWidth + dx); let newH = Math.max(30, startHeight + dy);
+                    actRoi.style.width = (newW / parentRect.width) * 100 + '%';
+                    actRoi.style.height = (newH / parentRect.height) * 100 + '%';
+                } else if (resizeHandle === 'tl') {
+                    let newW = startWidth - dx; let newH = startHeight - dy;
+                    let newL = startLeft + dx; let newT = startTop + dy;
+                    if (newW > 30) { actRoi.style.width = (newW/parentRect.width)*100+'%'; actRoi.style.left = (newL/parentRect.width)*100+'%'; }
+                    if (newH > 30) { actRoi.style.height = (newH/parentRect.height)*100+'%'; actRoi.style.top = (newT/parentRect.height)*100+'%'; }
+                }
+            }
+        }
+
+        function dragEnd() { isDrag = false; isResize = false; actRoi = null; }
+
+        videoContainer.addEventListener('mousedown', dragStart);
+        videoContainer.addEventListener('touchstart', dragStart, {passive: false});
+        document.addEventListener('mousemove', dragMove);
+        document.addEventListener('touchmove', dragMove, {passive: false});
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+
+        document.getElementById('p1-threshold').addEventListener('input', ()=>updateThreshold(1));
+        document.getElementById('p2-threshold').addEventListener('input', ()=>updateThreshold(2));
+
+        // SONIDO PREVIEW
+        document.getElementById('p1-sound').addEventListener('change', (e) => {
+            synth.triggerAttackRelease(e.target.value, "0.2");
+        });
+        document.getElementById('p2-sound').addEventListener('change', (e) => {
+            synth.triggerAttackRelease(e.target.value, "0.2");
+        });
+
+        // ACTUALIZACIÓN EN TIEMPO REAL DE VUELTAS
+        lapLimitSelect.addEventListener('change', () => {
+             totalLapsTarget = lapLimitSelect.value==='Infinity'?Infinity:parseInt(lapLimitSelect.value);
+             players.forEach(p => {
+                 document.getElementById(p.lapCountId).textContent = `V: ${p.laps} / ${totalLapsTarget===Infinity?'∞':totalLapsTarget}`;
+             });
+        });
+
+        startRaceBtn.onclick = startRace;
+        resetRaceBtn.onclick = () => { 
+            isRaceActive=false; clearInterval(raceIntervalId); 
+            startRaceBtn.disabled=false; falseStartAlert.classList.remove('show'); 
+            yellowFlagOverlay.classList.add('hidden'); // Ensure hidden on full reset
+        };
+        centralConfigBtn.onclick = () => configPanel.classList.toggle('open');
+        cameraOnBtn.onclick = startWebcam; cameraOffBtn.onclick = stopWebcam;
+        document.getElementById('fullscreen-btn').onclick = () => !document.fullscreenElement ? document.documentElement.requestFullscreen() : document.exitFullscreen();
+        
+        window.onload = () => {
+             updateThreshold(1); updateThreshold(2);
+             // Sync initial laps based on select value
+             totalLapsTarget = lapLimitSelect.value==='Infinity'?Infinity:parseInt(lapLimitSelect.value);
+             players.forEach(p => updatePlayerUI(p));
+
+             // Check saved language
+             const savedLang = localStorage.getItem('krono_lang');
+             if(savedLang) {
+                 languageSelect.value = savedLang;
+                 setLanguage(savedLang);
+             }
+
+             // SHOW TUTORIAL AUTOMATICALLY ON LOAD (Only if not seen)
+             if (!localStorage.getItem('krono_tutorial_seen')) {
+                 setTimeout(() => {
+                     tutorialModal.classList.add('open');
+                 }, 500);
+             }
+        };
+    </script>
+</body>
+</html>
