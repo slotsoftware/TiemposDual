@@ -13,42 +13,21 @@
     <meta name="application-name" content="KRONODUAL">
     <meta http-equiv="Permissions-Policy" content="camera=(self)">
     
+    <!-- CARGAR TAILWIND CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CARGAR TONE.JS PARA AUDIO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
+    <!-- CONFIGURACIÓN DE FIREBASE (Simulada para la vista previa) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let app;
-        let db;
-        let auth;
-        
-        window.initFirebase = async () => {
-            try {
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.warn("Firebase config not available. Running in local mode.");
-                    return;
-                }
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                // setLogLevel('Debug'); // Comentado para producción
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-            }
-        };
-        window.initFirebase();
+        // Simulamos la inicialización de Firebase para evitar errores en la consola
+        // ya que no tenemos las credenciales reales en este entorno de vista previa.
+        console.log("Firebase initialization simulated for preview.");
     </script>
     
     <style>
@@ -409,8 +388,6 @@
             </div>
             
             <div class="flex items-center gap-4 mt-2 sm:mt-0">
-                 <!-- Botón Tutorial Manual ELIMINADO -->
-
                  <button id="history-btn" class="flex items-center text-amber-900 hover:text-black transition-colors px-3 py-1 rounded-full bg-white/30 border border-amber-500/30 hover:bg-white/60 shadow-sm group" title="Ver Historial">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history mr-2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/><path d="M12 7v5l4 2"/></svg>
                     <span class="text-[10px] font-bold uppercase tracking-wider" data-lang-key="history_btn">Historial</span>
@@ -419,6 +396,7 @@
                      <svg id="fs-icon-enter" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                 </button>
                 
+                <!-- Traffic Light Module -->
                 <div id="traffic-light-module" class="traffic-light-container five-lights">
                     <div id="light-1" class="light"></div>
                     <div id="light-2" class="light"></div>
@@ -468,7 +446,7 @@
             </button>
         </div>
         
-        <!-- CONFIG PANEL (MOVED DOWN) -->
+        <!-- CONFIG PANEL -->
         <div id="config-panel" class="gold-panel w-full mb-4">
             <h2 class="text-sm neon-gold-title mb-3 border-b-2 border-amber-700/20 pb-2 flex items-center justify-start">
                 <span class="mr-2">⚙️</span> <span data-lang-key="config_title">Configuración</span>
@@ -576,7 +554,7 @@
                         <input type="number" id="track-length-input" value="15" min="1" step="0.5" class="gold-input w-full p-1.5 rounded-lg text-xs" />
                     </div>
                     
-                    <!-- NUEVO SELECTOR TIPO DE CARRERA -->
+                    <!-- SELECTOR TIPO DE CARRERA -->
                     <div>
                         <label class="block text-[10px] font-bold text-amber-800 mb-1 uppercase" data-lang-key="race_condition_label">Tipo de Carrera</label>
                         <div class="flex gap-2">
@@ -619,7 +597,7 @@
                         </div>
                     </div>
                 </div>
-                 <!-- NUEVA SECCION: SEGURIDAD -->
+                 <!-- SECCION: SEGURIDAD -->
                  <div class="mt-4 flex flex-col sm:flex-row gap-4 items-center justify-center p-3 bg-red-50/50 rounded-lg border border-red-200">
                     <label class="text-xs font-black text-amber-900 uppercase tracking-widest flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -673,7 +651,7 @@
                 <!-- ALERT BANDERA AMARILLA -->
                 <div id="yellow-flag-overlay" class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-yellow-900/40 z-50 hidden backdrop-blur-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="#ffd700" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse drop-shadow-lg"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
-                    <h2 class="text-5xl font-black text-yellow-400 uppercase tracking-widest drop-shadow-md mt-2" style="-webkit-text-stroke: 2px black;" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
+                    <h2 class="text-5xl font-black font-arial text-center text-yellow-400 uppercase tracking-widest mt-2" style="text-shadow: 2px 2px 10px rgba(0,0,0,0.9);" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
                     <div class="mt-4 flex gap-2">
                         <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
                         <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping delay-75"></div>
@@ -726,6 +704,10 @@
             <div id="telemetry-grid" class="telemetry-grid-twin">
                 <!-- COLUMNA P1 -->
                 <div class="telemetry-col">
+                    <div class="text-center mb-1 bg-gradient-to-r from-transparent via-amber-200/40 to-transparent py-1.5 rounded-lg border-b border-amber-300/40 shadow-sm">
+                        <div id="telemetry-p1-name" class="font-black text-amber-950 text-[11px] sm:text-xs tracking-widest uppercase truncate px-1">PILOTO 1</div>
+                        <div id="telemetry-p1-car" class="font-bold text-amber-700 text-[9px] uppercase truncate mt-0.5 px-1 font-arial">PORSCHE 911</div>
+                    </div>
                     <div class="telemetry-item bg-p1-soft">
                         <p class="telemetry-label text-amber-800" data-lang-key="best_lap">MEJOR VUELTA</p>
                         <p id="p1-best-lap" class="telemetry-data font-arial text-lg">--.---</p>
@@ -750,6 +732,10 @@
 
                 <!-- COLUMNA P2 -->
                 <div id="p2-telemetry-col" class="telemetry-col">
+                    <div class="text-center mb-1 bg-gradient-to-r from-transparent via-orange-200/40 to-transparent py-1.5 rounded-lg border-b border-orange-300/40 shadow-sm">
+                        <div id="telemetry-p2-name" class="font-black text-orange-950 text-[11px] sm:text-xs tracking-widest uppercase truncate px-1">PILOTO 2</div>
+                        <div id="telemetry-p2-car" class="font-bold text-orange-700 text-[9px] uppercase truncate mt-0.5 px-1 font-arial">AUDI R8</div>
+                    </div>
                     <div class="telemetry-item bg-p2-soft">
                         <p class="telemetry-label text-orange-800" data-lang-key="best_lap">MEJOR VUELTA</p>
                         <p id="p2-best-lap" class="telemetry-data font-arial text-lg">--.---</p>
@@ -781,7 +767,7 @@
         </div>
     </div>
 
-    <!-- TUTORIAL MODAL (NUEVO) -->
+    <!-- TUTORIAL MODAL -->
     <div id="tutorialModal" class="modal-overlay">
         <div class="modal-content p-8 w-full max-w-lg neon-border-box text-center">
             <div class="mb-6 border-b-2 border-amber-300 pb-4">
@@ -844,7 +830,6 @@
                 </div>
             </div>
             
-            <!-- GRID DE DETALLES - AÑADIDO ID Y IDs A LAS TARJETAS -->
             <div id="results-grid" class="grid grid-cols-2 gap-6 mb-8 text-left">
                 <!-- P1 Summary -->
                 <div id="p1-summary-card" class="bg-yellow-100/50 p-4 rounded-xl border border-yellow-400 shadow-inner">
@@ -1079,12 +1064,12 @@
         const falseStartAlert = document.getElementById('false-start-alert');
         const falseStartPlayerName = document.getElementById('false-start-player');
         const exportExcelBtn = document.getElementById('export-excel-btn');
-        // helpBtn eliminado
+        
         const gameModeSelect = document.getElementById('game-mode-select'); 
         const languageSelect = document.getElementById('language-select');
-        const raceConditionSelect = document.getElementById('race-condition-select'); // NEW
-        const timeLimitSelect = document.getElementById('time-limit-select'); // NEW
-        const yellowFlagOverlay = document.getElementById('yellow-flag-overlay'); // NEW
+        const raceConditionSelect = document.getElementById('race-condition-select'); 
+        const timeLimitSelect = document.getElementById('time-limit-select'); 
+        const yellowFlagOverlay = document.getElementById('yellow-flag-overlay'); 
         
         // Tutorial
         const tutorialModal = document.getElementById('tutorialModal');
@@ -1972,7 +1957,6 @@
             ctx.fillText("TIEMPO (s)", 5, 10);
             
             if(maxL===0) {
-                 // Removed text drawing as requested
                  return;
             }
 
@@ -2067,10 +2051,7 @@
             tutorialModal.classList.remove('open');
             // Guardamos que ya se ha visto
             localStorage.setItem('krono_tutorial_seen', 'true');
-            // Sonido eliminado
         };
-
-        // helpBtn onclick eliminado
 
         // --- DRAG AND RESIZE LOGIC ---
         let actRoi = null;
@@ -2151,6 +2132,19 @@
              });
         });
 
+        // SINCRONIZACIÓN DE NOMBRES EN TELEMETRÍA
+        function syncTelemetryInfo() {
+            document.getElementById('telemetry-p1-name').textContent = document.getElementById('p1-name').value || 'P1';
+            document.getElementById('telemetry-p1-car').textContent = document.getElementById('p1-car').value || '-';
+            document.getElementById('telemetry-p2-name').textContent = document.getElementById('p2-name').value || 'P2';
+            document.getElementById('telemetry-p2-car').textContent = document.getElementById('p2-car').value || '-';
+        }
+
+        document.getElementById('p1-name').addEventListener('input', syncTelemetryInfo);
+        document.getElementById('p1-car').addEventListener('input', syncTelemetryInfo);
+        document.getElementById('p2-name').addEventListener('input', syncTelemetryInfo);
+        document.getElementById('p2-car').addEventListener('input', syncTelemetryInfo);
+
         startRaceBtn.onclick = startRace;
         resetRaceBtn.onclick = () => { 
             isRaceActive=false; clearInterval(raceIntervalId); 
@@ -2166,6 +2160,7 @@
              // Sync initial laps based on select value
              totalLapsTarget = lapLimitSelect.value==='Infinity'?Infinity:parseInt(lapLimitSelect.value);
              players.forEach(p => updatePlayerUI(p));
+             syncTelemetryInfo();
 
              // Check saved language
              const savedLang = localStorage.getItem('krono_lang');
