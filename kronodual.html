@@ -969,6 +969,12 @@
                 </div>
             </div>
 
+            <!-- GRAFICA EN MODAL -->
+            <div class="mb-6 bg-black/60 p-4 rounded-xl border border-amber-400 shadow-[0_0_15px_rgba(255,215,0,0.2)]">
+                <h4 class="text-xs font-black text-amber-500 uppercase mb-2 border-b border-amber-500/30 pb-1 tracking-wider text-left" data-lang-key="graph_title">Tiempos de Carrera</h4>
+                <canvas id="modal-lap-graph-canvas" class="w-full h-[200px]"></canvas>
+            </div>
+
             <!-- BOTONES ACCIÓN MODAL -->
             <button id="export-excel-btn" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-900 text-white font-bold py-3 rounded-xl hover:from-emerald-500 hover:to-emerald-800 transition shadow-xl border border-emerald-400/50 text-base tracking-widest uppercase mb-4 flex items-center justify-center gap-2 font-arial">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
@@ -2022,7 +2028,12 @@
             
             saveHistory(wName);
             document.getElementById('resultsModal').classList.remove('hidden');
-            setTimeout(()=>document.getElementById('resultsModal').classList.add('open'),10);
+            
+            // Dibujar gráfica en el modal tras quitar el display:none para tener el ancho correcto
+            setTimeout(() => {
+                renderGraphToCanvas('modal-lap-graph-canvas');
+                document.getElementById('resultsModal').classList.add('open');
+            }, 20);
             
             if (activePlayers === 1) speak('voice_completed');
             else speak('voice_winner', wName);
@@ -2068,9 +2079,15 @@
             document.body.removeChild(link);
         }
 
-        function drawGraph() {
-            const ctx = document.getElementById('lap-graph-canvas').getContext('2d');
-            const w = ctx.canvas.parentElement.offsetWidth;
+        function renderGraphToCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            let w = canvas.parentElement.offsetWidth;
+            // Fallback si el contenedor aún no tiene ancho
+            if (w === 0) w = canvas.getBoundingClientRect().width || 500;
+            
             ctx.canvas.width = w; ctx.canvas.height = 200;
             const p1d = players[0].lapHistory; const p2d = players[1].lapHistory;
             const maxL = Math.max(p1d.length, p2d.length);
@@ -2082,10 +2099,7 @@
             ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
             ctx.fillText("TIEMPO (s)", 5, 10);
             
-            if(maxL===0) {
-                 // Removed text drawing as requested
-                 return;
-            }
+            if(maxL===0) return;
 
             const all = [...p1d, ...(activePlayers===2 ? p2d : [])];
             const maxT = Math.max(...all);
@@ -2111,6 +2125,10 @@
                 ctx.fillStyle='#aaa'; ctx.font='10px Arial'; ctx.textAlign='center';
                 ctx.fillText(i+1, x+bw, 195);
             }
+        }
+
+        function drawGraph() {
+            renderGraphToCanvas('lap-graph-canvas');
         }
         
         function showNotification(txt) {
