@@ -13,21 +13,42 @@
     <meta name="application-name" content="KRONODUAL">
     <meta http-equiv="Permissions-Policy" content="camera=(self)">
     
-    <!-- CARGAR TAILWIND CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- CARGAR TONE.JS PARA AUDIO -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
-    <!-- CONFIGURACIÓN DE FIREBASE (Simulada para la vista previa) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Simulamos la inicialización de Firebase para evitar errores en la consola
-        // ya que no tenemos las credenciales reales en este entorno de vista previa.
-        console.log("Firebase initialization simulated for preview.");
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app;
+        let db;
+        let auth;
+        
+        window.initFirebase = async () => {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.warn("Firebase config not available. Running in local mode.");
+                    return;
+                }
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                // setLogLevel('Debug'); // Comentado para producción
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        };
+        window.initFirebase();
     </script>
     
     <style>
@@ -111,9 +132,16 @@
         }
         
         #webcam-feed {
-            max-height: 320px; object-fit: cover; width: 100%;
+            min-height: 200px; max-height: 250px; 
+            object-fit: cover; width: 100%;
             display: block; transform: scaleX(1);
             filter: contrast(1.1) grayscale(0.1);
+            transition: max-height 0.5s ease-in-out, min-height 0.5s ease-in-out;
+        }
+        
+        #webcam-feed.expanded-cam {
+            min-height: 40vh;
+            max-height: 70vh;
         }
 
         .movable-rectangle {
@@ -194,6 +222,43 @@
 
         .handle-tl { top: -7px; left: -7px; cursor: nwse-resize; border-radius: 2px; } 
         .handle-br { bottom: -7px; right: -7px; cursor: nwse-resize; border-radius: 2px; } 
+
+        /* CUSTOM RANGE SLIDER ESTILOS */
+        .sens-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;  
+            background: #d3d3d3;
+            outline: none;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .sens-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            border: 2px solid #fff;
+        }
+
+        .sens-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            border: 2px solid #fff;
+        }
+
+        /* COLORES DE PULGAR POR JUGADOR */
+        #main-sens-p1::-webkit-slider-thumb { background: #d97706; } /* ambar-600 */
+        #main-sens-p1::-moz-range-thumb { background: #d97706; }
+        #main-sens-p2::-webkit-slider-thumb { background: #ea580c; } /* orange-600 */
+        #main-sens-p2::-moz-range-thumb { background: #ea580c; }
         
         .timer-value {
             font-size: 1.1rem; line-height: 1.5rem; 
@@ -388,6 +453,8 @@
             </div>
             
             <div class="flex items-center gap-4 mt-2 sm:mt-0">
+                 <!-- Botón Tutorial Manual ELIMINADO -->
+
                  <button id="history-btn" class="flex items-center text-amber-900 hover:text-black transition-colors px-3 py-1 rounded-full bg-white/30 border border-amber-500/30 hover:bg-white/60 shadow-sm group" title="Ver Historial">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history mr-2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/><path d="M12 7v5l4 2"/></svg>
                     <span class="text-[10px] font-bold uppercase tracking-wider" data-lang-key="history_btn">Historial</span>
@@ -396,7 +463,6 @@
                      <svg id="fs-icon-enter" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                 </button>
                 
-                <!-- Traffic Light Module -->
                 <div id="traffic-light-module" class="traffic-light-container five-lights">
                     <div id="light-1" class="light"></div>
                     <div id="light-2" class="light"></div>
@@ -446,7 +512,7 @@
             </button>
         </div>
         
-        <!-- CONFIG PANEL -->
+        <!-- CONFIG PANEL (MOVED DOWN) -->
         <div id="config-panel" class="gold-panel w-full mb-4">
             <h2 class="text-sm neon-gold-title mb-3 border-b-2 border-amber-700/20 pb-2 flex items-center justify-start">
                 <span class="mr-2">⚙️</span> <span data-lang-key="config_title">Configuración</span>
@@ -554,7 +620,7 @@
                         <input type="number" id="track-length-input" value="15" min="1" step="0.5" class="gold-input w-full p-1.5 rounded-lg text-xs" />
                     </div>
                     
-                    <!-- SELECTOR TIPO DE CARRERA -->
+                    <!-- NUEVO SELECTOR TIPO DE CARRERA -->
                     <div>
                         <label class="block text-[10px] font-bold text-amber-800 mb-1 uppercase" data-lang-key="race_condition_label">Tipo de Carrera</label>
                         <div class="flex gap-2">
@@ -597,7 +663,7 @@
                         </div>
                     </div>
                 </div>
-                 <!-- SECCION: SEGURIDAD -->
+                 <!-- NUEVA SECCION: SEGURIDAD -->
                  <div class="mt-4 flex flex-col sm:flex-row gap-4 items-center justify-center p-3 bg-red-50/50 rounded-lg border border-red-200">
                     <label class="text-xs font-black text-amber-900 uppercase tracking-widest flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -621,9 +687,6 @@
             <div class="flex justify-between items-center border-b-2 border-amber-800/20 pb-3 mb-3">
                 <h2 class="text-base neon-gold-title" data-lang-key="camera_title">Cámara Twin ROI</h2>
                 <div class="flex space-x-2">
-                    <button id="calibrate-btn" class="p-2 px-4 rounded-full bg-gradient-to-b from-amber-400 to-amber-600 text-white hover:from-amber-500 hover:to-amber-700 transition shadow-lg border border-amber-200 text-xs font-bold uppercase disabled:opacity-50 tracking-wider disabled:grayscale" disabled data-lang-key="btn_calibrate">
-                        Auto Calibrar
-                    </button>
                     <button id="camera-on-btn" class="p-2 rounded-full bg-gradient-to-b from-green-500 to-green-700 text-white hover:from-green-600 hover:to-green-800 disabled:opacity-50 transition shadow-lg border border-green-300">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                     </button>
@@ -651,7 +714,7 @@
                 <!-- ALERT BANDERA AMARILLA -->
                 <div id="yellow-flag-overlay" class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-yellow-900/40 z-50 hidden backdrop-blur-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="#ffd700" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse drop-shadow-lg"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
-                    <h2 class="text-5xl font-black font-arial text-center text-yellow-400 uppercase tracking-widest mt-2" style="text-shadow: 2px 2px 10px rgba(0,0,0,0.9);" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
+                    <h2 class="text-5xl font-black text-yellow-400 uppercase tracking-widest drop-shadow-md mt-2" style="-webkit-text-stroke: 2px black;" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
                     <div class="mt-4 flex gap-2">
                         <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
                         <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping delay-75"></div>
@@ -684,7 +747,50 @@
             </div>
             
             <canvas id="video-canvas" class="hidden"></canvas>
-            <div id="video-status" class="text-center text-xs mt-3 text-amber-900 font-bold tracking-widest uppercase" data-lang-key="video_status_init">Inicia la cámara para configurar carriles</div>
+            <div id="video-status" class="text-center text-xs mt-3 mb-2 text-amber-900 font-bold tracking-widest uppercase" data-lang-key="video_status_init">Inicia la cámara para configurar carriles</div>
+
+            <!-- BOTONES AUTO CALIBRAR INDEPENDIENTES Y SENSIBILIDAD -->
+            <div id="calibration-buttons-container" class="mt-3 flex flex-col sm:flex-row gap-4 justify-center w-full border-t border-amber-800/20 pt-4">
+                
+                <!-- COLUMNA CALIBRACIÓN P1 -->
+                <div class="flex-1 flex flex-col items-center bg-yellow-50/50 p-2 rounded-lg border border-yellow-200 shadow-inner">
+                    <button id="calibrate-btn-p1" class="w-full py-2 px-3 mb-2 rounded-lg bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-950 font-black uppercase tracking-wider hover:from-yellow-300 hover:to-yellow-500 disabled:opacity-50 disabled:grayscale transition shadow-[0_0_10px_rgba(255,215,0,0.4)] border-2 border-yellow-200 text-xs flex items-center justify-center gap-1" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span data-lang-key="btn_calibrate_p1">Calibrar P1</span>
+                    </button>
+                    
+                    <div class="w-full flex items-center justify-between mt-1">
+                        <span class="text-[9px] text-amber-800 font-bold uppercase tracking-wider">SENS P1</span>
+                        <span id="main-calib-sens-p1" class="text-xs font-black text-amber-950 bg-white px-1.5 py-0.5 rounded shadow-sm border border-yellow-300">20</span>
+                    </div>
+                    <!-- SLIDER PRINCIPAL P1 -->
+                    <div class="flex items-center space-x-2 w-full mt-2">
+                        <button class="btn-adjust" onclick="adjT(1, -1)">-</button>
+                        <input type="range" id="main-sens-p1" min="5" max="80" value="20" class="sens-slider flex-1">
+                        <button class="btn-adjust" onclick="adjT(1, 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- COLUMNA CALIBRACIÓN P2 -->
+                <div id="calib-container-p2" class="flex-1 flex flex-col items-center bg-orange-50/50 p-2 rounded-lg border border-orange-200 shadow-inner">
+                    <button id="calibrate-btn-p2" class="w-full py-2 px-3 mb-2 rounded-lg bg-gradient-to-r from-orange-400 to-orange-600 text-orange-950 font-black uppercase tracking-wider hover:from-orange-300 hover:to-orange-500 disabled:opacity-50 disabled:grayscale transition shadow-[0_0_10px_rgba(255,127,80,0.4)] border-2 border-orange-200 text-xs flex items-center justify-center gap-1" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span data-lang-key="btn_calibrate_p2">Calibrar P2</span>
+                    </button>
+                    
+                    <div class="w-full flex items-center justify-between mt-1">
+                        <span class="text-[9px] text-orange-800 font-bold uppercase tracking-wider">SENS P2</span>
+                        <span id="main-calib-sens-p2" class="text-xs font-black text-orange-950 bg-white px-1.5 py-0.5 rounded shadow-sm border border-orange-300">20</span>
+                    </div>
+                    <!-- SLIDER PRINCIPAL P2 -->
+                    <div class="flex items-center space-x-2 w-full mt-2">
+                        <button class="btn-adjust" onclick="adjT(2, -1)">-</button>
+                        <input type="range" id="main-sens-p2" min="5" max="80" value="20" class="sens-slider flex-1">
+                        <button class="btn-adjust" onclick="adjT(2, 1)">+</button>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
         <!-- TELEMETRIA TWIN -->
@@ -704,9 +810,9 @@
             <div id="telemetry-grid" class="telemetry-grid-twin">
                 <!-- COLUMNA P1 -->
                 <div class="telemetry-col">
-                    <div class="text-center mb-1 bg-gradient-to-r from-transparent via-amber-200/40 to-transparent py-1.5 rounded-lg border-b border-amber-300/40 shadow-sm">
-                        <div id="telemetry-p1-name" class="font-black text-amber-950 text-[11px] sm:text-xs tracking-widest uppercase truncate px-1">PILOTO 1</div>
-                        <div id="telemetry-p1-car" class="font-bold text-amber-700 text-[9px] uppercase truncate mt-0.5 px-1 font-arial">PORSCHE 911</div>
+                    <div class="telemetry-item bg-gradient-to-r from-yellow-300 to-yellow-100 border-yellow-500 mb-1 shadow-sm">
+                        <p id="p1-telemetry-name" class="font-black text-amber-950 text-xs uppercase tracking-wide truncate">Piloto 1</p>
+                        <p id="p1-telemetry-car" class="text-[9px] font-bold text-amber-800 uppercase tracking-widest truncate mt-0.5">Porsche 911</p>
                     </div>
                     <div class="telemetry-item bg-p1-soft">
                         <p class="telemetry-label text-amber-800" data-lang-key="best_lap">MEJOR VUELTA</p>
@@ -732,9 +838,9 @@
 
                 <!-- COLUMNA P2 -->
                 <div id="p2-telemetry-col" class="telemetry-col">
-                    <div class="text-center mb-1 bg-gradient-to-r from-transparent via-orange-200/40 to-transparent py-1.5 rounded-lg border-b border-orange-300/40 shadow-sm">
-                        <div id="telemetry-p2-name" class="font-black text-orange-950 text-[11px] sm:text-xs tracking-widest uppercase truncate px-1">PILOTO 2</div>
-                        <div id="telemetry-p2-car" class="font-bold text-orange-700 text-[9px] uppercase truncate mt-0.5 px-1 font-arial">AUDI R8</div>
+                    <div class="telemetry-item bg-gradient-to-r from-orange-300 to-orange-100 border-orange-500 mb-1 shadow-sm">
+                        <p id="p2-telemetry-name" class="font-black text-orange-950 text-xs uppercase tracking-wide truncate">Piloto 2</p>
+                        <p id="p2-telemetry-car" class="text-[9px] font-bold text-orange-800 uppercase tracking-widest truncate mt-0.5">Audi R8</p>
                     </div>
                     <div class="telemetry-item bg-p2-soft">
                         <p class="telemetry-label text-orange-800" data-lang-key="best_lap">MEJOR VUELTA</p>
@@ -767,7 +873,7 @@
         </div>
     </div>
 
-    <!-- TUTORIAL MODAL -->
+    <!-- TUTORIAL MODAL (NUEVO) -->
     <div id="tutorialModal" class="modal-overlay">
         <div class="modal-content p-8 w-full max-w-lg neon-border-box text-center">
             <div class="mb-6 border-b-2 border-amber-300 pb-4">
@@ -830,6 +936,7 @@
                 </div>
             </div>
             
+            <!-- GRID DE DETALLES - AÑADIDO ID Y IDs A LAS TARJETAS -->
             <div id="results-grid" class="grid grid-cols-2 gap-6 mb-8 text-left">
                 <!-- P1 Summary -->
                 <div id="p1-summary-card" class="bg-yellow-100/50 p-4 rounded-xl border border-yellow-400 shadow-inner">
@@ -897,7 +1004,7 @@
                 safety_time_label: "Tiempo de Seguridad (IA):",
                 safety_time_desc: "Evita dobles conteos. El sistema ignora detecciones durante este tiempo tras cruzar la meta.",
                 camera_title: "Cámara Twin ROI",
-                btn_calibrate: "AUTO CALIBRAR",
+                btn_calibrate: "AUTO CALIBRAR", btn_calibrate_p1: "CALIBRAR P1", btn_calibrate_p2: "CALIBRAR P2",
                 video_status_init: "Inicia la cámara para configurar carriles",
                 video_status_ready: "CÁMARA ACTIVA - SISTEMA LISTO",
                 video_status_off: "Cámara apagada.",
@@ -949,7 +1056,7 @@
                 safety_time_label: "Safety Time (AI):",
                 safety_time_desc: "Prevents double counting. System ignores detections for this time after crossing line.",
                 camera_title: "Twin ROI Camera",
-                btn_calibrate: "AUTO CALIBRATE",
+                btn_calibrate: "AUTO CALIBRATE", btn_calibrate_p1: "CALIBRATE P1", btn_calibrate_p2: "CALIBRATE P2",
                 video_status_init: "Start camera to setup lanes",
                 video_status_ready: "CAMERA ACTIVE - SYSTEM READY",
                 video_status_off: "Camera off.",
@@ -1001,7 +1108,7 @@
                 safety_time_label: "Temps Sécurité (IA):",
                 safety_time_desc: "Évite le double comptage. Le système ignore les détections pendant ce temps.",
                 camera_title: "Caméra Twin ROI",
-                btn_calibrate: "AUTO CALIBRAGE",
+                btn_calibrate: "AUTO CALIBRAGE", btn_calibrate_p1: "CALIBRER P1", btn_calibrate_p2: "CALIBRER P2",
                 video_status_init: "Démarrer caméra pour configurer",
                 video_status_ready: "CAMÉRA ACTIVE - SYSTÈME PRÊT",
                 video_status_off: "Caméra éteinte.",
@@ -1046,7 +1153,8 @@
         const resetRaceBtn = document.getElementById('reset-race-btn');
         const configPanel = document.getElementById('config-panel');
         const centralConfigBtn = document.getElementById('central-config-btn');
-        const calibrateBtn = document.getElementById('calibrate-btn');
+        const calibrateBtnP1 = document.getElementById('calibrate-btn-p1');
+        const calibrateBtnP2 = document.getElementById('calibrate-btn-p2');
         const calibOverlay = document.getElementById('calib-overlay');
         const pauseRaceBtn = document.getElementById('pause-race-btn');
         const pauseIcon = document.getElementById('pause-icon');
@@ -1064,12 +1172,12 @@
         const falseStartAlert = document.getElementById('false-start-alert');
         const falseStartPlayerName = document.getElementById('false-start-player');
         const exportExcelBtn = document.getElementById('export-excel-btn');
-        
+        // helpBtn eliminado
         const gameModeSelect = document.getElementById('game-mode-select'); 
         const languageSelect = document.getElementById('language-select');
-        const raceConditionSelect = document.getElementById('race-condition-select'); 
-        const timeLimitSelect = document.getElementById('time-limit-select'); 
-        const yellowFlagOverlay = document.getElementById('yellow-flag-overlay'); 
+        const raceConditionSelect = document.getElementById('race-condition-select'); // NEW
+        const timeLimitSelect = document.getElementById('time-limit-select'); // NEW
+        const yellowFlagOverlay = document.getElementById('yellow-flag-overlay'); // NEW
         
         // Tutorial
         const tutorialModal = document.getElementById('tutorialModal');
@@ -1212,6 +1320,7 @@
                 topGrid.classList.add('grid-cols-1');
                 
                 telemetryGrid.style.gridTemplateColumns = '1fr';
+                document.getElementById('calib-container-p2').style.display = 'none';
             } else {
                 // Duel Mode
                 p2Config.style.display = 'block';
@@ -1223,6 +1332,7 @@
                 topGrid.classList.remove('grid-cols-1');
                 
                 telemetryGrid.style.gridTemplateColumns = '1fr 1fr';
+                document.getElementById('calib-container-p2').style.display = 'flex';
             }
         }
         
@@ -1246,15 +1356,38 @@
             const p = players[pId-1];
             let val = parseInt(document.getElementById(p.thresholdId).value);
             val = Math.max(5, Math.min(100, val + delta));
-            document.getElementById(p.thresholdId).value = val;
-            updateThreshold(pId);
+            
+            // Actualizar ambos sliders y displays
+            updateThresholdDisplays(pId, val);
         }
 
-        function updateThreshold(pId) {
+        function updateThresholdDisplays(pId, val) {
             const p = players[pId-1];
-            const val = document.getElementById(p.thresholdId).value;
             p.sensitivity = parseInt(val);
+            
+            // Actualizar Slider Config
+            document.getElementById(p.thresholdId).value = val;
             document.getElementById(p.thresholdDispId).textContent = val;
+            
+            // Actualizar Slider Principal
+            const mainSlider = document.getElementById(`main-sens-p${pId}`);
+            const mainDisplay = document.getElementById(`main-calib-sens-p${pId}`);
+            
+            if (mainSlider) mainSlider.value = val;
+            if (mainDisplay) mainDisplay.textContent = val;
+        }
+        
+        function syncSliders() {
+            // Eventos para sliders del panel de configuración
+            document.getElementById('p1-threshold').addEventListener('input', (e)=> updateThresholdDisplays(1, e.target.value));
+            document.getElementById('p2-threshold').addEventListener('input', (e)=> updateThresholdDisplays(2, e.target.value));
+            
+            // Eventos para los nuevos sliders de la pantalla principal
+            const mainS1 = document.getElementById('main-sens-p1');
+            const mainS2 = document.getElementById('main-sens-p2');
+            
+            if (mainS1) mainS1.addEventListener('input', (e) => updateThresholdDisplays(1, e.target.value));
+            if (mainS2) mainS2.addEventListener('input', (e) => updateThresholdDisplays(2, e.target.value));
         }
 
         // --- CAMERA ---
@@ -1267,6 +1400,7 @@
                 videoElement.srcObject = cameraStream;
                 videoElement.onloadedmetadata = () => {
                     videoElement.play();
+                    videoElement.classList.add('expanded-cam');
                     canvas.width = videoElement.videoWidth;
                     canvas.height = videoElement.videoHeight;
                     isProcessing = true;
@@ -1283,7 +1417,8 @@
                     videoStatus.className = "text-center text-sm mt-2 text-green-600 font-bold uppercase";
                     cameraOnBtn.disabled = true;
                     cameraOffBtn.disabled = false;
-                    calibrateBtn.disabled = false;
+                    calibrateBtnP1.disabled = false;
+                    calibrateBtnP2.disabled = false;
                 };
             } catch (err) {
                 videoStatus.textContent = 'Error: ' + err.name;
@@ -1294,9 +1429,11 @@
         function stopWebcam() {
             if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
             cameraStream = null; isProcessing = false; videoElement.srcObject = null;
+            videoElement.classList.remove('expanded-cam');
             document.querySelectorAll('.movable-rectangle').forEach(el => el.style.display = 'none');
             cameraOnBtn.disabled = false; cameraOffBtn.disabled = true;
-            calibrateBtn.disabled = true;
+            calibrateBtnP1.disabled = true;
+            calibrateBtnP2.disabled = true;
             const t = translations[currentLang];
             videoStatus.textContent = t.video_status_off; 
             videoStatus.className = "text-amber-900 text-center text-sm mt-2";
@@ -1430,59 +1567,48 @@
         }
 
         // --- AUTO CALIBRATION ---
-        async function runAutoCalibration() {
-            if (!isProcessing) return;
+        async function runAutoCalibration(pId) {
+            if (!isProcessing || isCalibrating) return;
             isCalibrating = true;
             calibOverlay.classList.add('active');
             
             // 1. Measure Baseline
             let samples = 0;
-            const p1Stats = { sum: 0, min: 255, max: 0 };
-            const p2Stats = { sum: 0, min: 255, max: 0 };
-            
+            const stats = { sum: 0, min: 255, max: 0 };
             const framesToRead = 60; // Approx 1-2 seconds
+            const roiEl = document.getElementById(`roi-p${pId}`);
             
             const readFrame = () => {
-                const b1 = getRoiBrightness(document.getElementById('roi-p1'));
-                if (activePlayers === 2) {
-                     const b2 = getRoiBrightness(document.getElementById('roi-p2'));
-                     p2Stats.sum += b2; p2Stats.min = Math.min(p2Stats.min, b2); p2Stats.max = Math.max(p2Stats.max, b2);
-                }
-                
-                p1Stats.sum += b1; p1Stats.min = Math.min(p1Stats.min, b1); p1Stats.max = Math.max(p1Stats.max, b1);
+                const b = getRoiBrightness(roiEl);
+                stats.sum += b; 
+                stats.min = Math.min(stats.min, b); 
+                stats.max = Math.max(stats.max, b);
                 
                 samples++;
                 if (samples < framesToRead) {
                     requestAnimationFrame(readFrame);
                 } else {
-                    finishCalibration(p1Stats, p2Stats);
+                    finishCalibration(stats, pId);
                 }
             };
             
             readFrame();
         }
         
-        function finishCalibration(s1, s2) {
-            // Set Base Brightness
-            players[0].baseBrightness = s1.sum / 60;
-            const noise1 = Math.max(s1.max - players[0].baseBrightness, players[0].baseBrightness - s1.min);
+        function finishCalibration(stats, pId) {
+            // Set Base Brightness for Specific Player
+            const p = players[pId - 1];
+            p.baseBrightness = stats.sum / 60;
+            const noise = Math.max(stats.max - p.baseBrightness, p.baseBrightness - stats.min);
             const safeMargin = 15; // Minimum diff required
-            const newSens1 = Math.max(safeMargin, Math.ceil(noise1 * 1.5));
-            document.getElementById('p1-threshold').value = newSens1;
-            updateThreshold(1);
+            const newSens = Math.max(safeMargin, Math.ceil(noise * 1.5));
             
-            if (activePlayers === 2) {
-                players[1].baseBrightness = s2.sum / 60;
-                const noise2 = Math.max(s2.max - players[1].baseBrightness, players[1].baseBrightness - s2.min);
-                const newSens2 = Math.max(safeMargin, Math.ceil(noise2 * 1.5));
-                document.getElementById('p2-threshold').value = newSens2;
-                updateThreshold(2);
-            }
+            updateThresholdDisplays(pId, newSens);
             
             isCalibrating = false;
             calibOverlay.classList.remove('active');
             
-            speak('voice_calibrated');
+            speak('voice_calibrated', ` Piloto ${pId}`);
         }
 
         function handleFalseStart(player) {
@@ -1957,6 +2083,7 @@
             ctx.fillText("TIEMPO (s)", 5, 10);
             
             if(maxL===0) {
+                 // Removed text drawing as requested
                  return;
             }
 
@@ -2042,7 +2169,8 @@
             isPaused = false;
             yellowFlagOverlay.classList.add('hidden'); // Ensure hidden on restart
         };
-        calibrateBtn.onclick = runAutoCalibration;
+        calibrateBtnP1.onclick = () => runAutoCalibration(1);
+        calibrateBtnP2.onclick = () => runAutoCalibration(2);
         exportExcelBtn.onclick = exportToExcel;
         pauseRaceBtn.onclick = togglePause;
         
@@ -2051,7 +2179,10 @@
             tutorialModal.classList.remove('open');
             // Guardamos que ya se ha visto
             localStorage.setItem('krono_tutorial_seen', 'true');
+            // Sonido eliminado
         };
+
+        // helpBtn onclick eliminado
 
         // --- DRAG AND RESIZE LOGIC ---
         let actRoi = null;
@@ -2113,8 +2244,18 @@
         document.addEventListener('mouseup', dragEnd);
         document.addEventListener('touchend', dragEnd);
 
-        document.getElementById('p1-threshold').addEventListener('input', ()=>updateThreshold(1));
-        document.getElementById('p2-threshold').addEventListener('input', ()=>updateThreshold(2));
+        // Los event listeners de los threshold originales se movieron a syncSliders()
+
+        // SYNC TELEMETRY NAMES
+        const syncTelemetryNames = () => {
+            document.getElementById('p1-telemetry-name').textContent = document.getElementById('p1-name').value || 'Piloto 1';
+            document.getElementById('p1-telemetry-car').textContent = document.getElementById('p1-car').value || 'Coche 1';
+            document.getElementById('p2-telemetry-name').textContent = document.getElementById('p2-name').value || 'Piloto 2';
+            document.getElementById('p2-telemetry-car').textContent = document.getElementById('p2-car').value || 'Coche 2';
+        };
+        ['p1-name', 'p1-car', 'p2-name', 'p2-car'].forEach(id => {
+            document.getElementById(id).addEventListener('input', syncTelemetryNames);
+        });
 
         // SONIDO PREVIEW
         document.getElementById('p1-sound').addEventListener('change', (e) => {
@@ -2132,19 +2273,6 @@
              });
         });
 
-        // SINCRONIZACIÓN DE NOMBRES EN TELEMETRÍA
-        function syncTelemetryInfo() {
-            document.getElementById('telemetry-p1-name').textContent = document.getElementById('p1-name').value || 'P1';
-            document.getElementById('telemetry-p1-car').textContent = document.getElementById('p1-car').value || '-';
-            document.getElementById('telemetry-p2-name').textContent = document.getElementById('p2-name').value || 'P2';
-            document.getElementById('telemetry-p2-car').textContent = document.getElementById('p2-car').value || '-';
-        }
-
-        document.getElementById('p1-name').addEventListener('input', syncTelemetryInfo);
-        document.getElementById('p1-car').addEventListener('input', syncTelemetryInfo);
-        document.getElementById('p2-name').addEventListener('input', syncTelemetryInfo);
-        document.getElementById('p2-car').addEventListener('input', syncTelemetryInfo);
-
         startRaceBtn.onclick = startRace;
         resetRaceBtn.onclick = () => { 
             isRaceActive=false; clearInterval(raceIntervalId); 
@@ -2156,11 +2284,14 @@
         document.getElementById('fullscreen-btn').onclick = () => !document.fullscreenElement ? document.documentElement.requestFullscreen() : document.exitFullscreen();
         
         window.onload = () => {
-             updateThreshold(1); updateThreshold(2);
+             syncSliders(); // Inicializa los eventos de los sliders
+             updateThresholdDisplays(1, 20); // Valores iniciales
+             updateThresholdDisplays(2, 20); // Valores iniciales
+             
+             syncTelemetryNames(); // Sincroniza nombres al cargar
              // Sync initial laps based on select value
              totalLapsTarget = lapLimitSelect.value==='Infinity'?Infinity:parseInt(lapLimitSelect.value);
              players.forEach(p => updatePlayerUI(p));
-             syncTelemetryInfo();
 
              // Check saved language
              const savedLang = localStorage.getItem('krono_lang');
