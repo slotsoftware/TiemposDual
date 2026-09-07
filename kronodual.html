@@ -718,9 +718,9 @@
 
                 <!-- ALERT BANDERA AMARILLA -->
                 <div id="yellow-flag-overlay" class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-yellow-900/40 z-50 hidden backdrop-blur-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="#ffd700" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse drop-shadow-lg"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
-                    <h2 class="text-5xl font-black text-yellow-400 uppercase tracking-widest drop-shadow-md mt-2" style="-webkit-text-stroke: 2px black;" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
-                    <div class="mt-4 flex gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="#ffd700" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse drop-shadow-lg mx-auto"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                    <h2 class="text-5xl font-arial font-black text-yellow-400 uppercase tracking-widest mt-2 text-center" style="text-shadow: 0 4px 8px rgba(0,0,0,0.8);" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
+                    <div class="mt-4 flex gap-2 justify-center">
                         <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
                         <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping delay-75"></div>
                         <div class="w-4 h-4 bg-yellow-400 rounded-full animate-ping delay-150"></div>
@@ -806,13 +806,13 @@
                 </h2>
                 <!-- BOTON PAUSA INTEGRADO EN EL PANEL DE TELEMETRIA -->
                 <button id="pause-race-btn" class="px-4 py-2 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-2" disabled>
-                     <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="control-icon m-0" style="width:12px; height:12px;" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-                     <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="control-icon m-0 hidden" style="width:12px; height:12px;" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                     <span id="pause-text" data-lang-key="pause">PAUSAR</span>
+                     <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="control-icon m-0 pointer-events-none" style="width:12px; height:12px;" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                     <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="control-icon m-0 hidden pointer-events-none" style="width:12px; height:12px;" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                     <span id="pause-text" class="pointer-events-none" data-lang-key="pause">PAUSAR</span>
                 </button>
             </div>
             
-            <div id="telemetry-grid" class="telemetry-grid-twin">
+            <div id="telemetry-grid" class="telemetry-grid-twin transition-opacity duration-300">
                 <!-- COLUMNA P1 -->
                 <div class="telemetry-col">
                     <div class="telemetry-item bg-gradient-to-r from-yellow-300 to-yellow-100 border-yellow-500 mb-1 shadow-sm">
@@ -1645,7 +1645,10 @@
             if (isPaused) {
                 // START PAUSE
                 isRaceActive = false; // Stop processing detections
-                clearInterval(raceIntervalId); // Stop UI updates
+                if (raceIntervalId) {
+                    clearInterval(raceIntervalId); // Stop UI updates
+                    raceIntervalId = null;
+                }
                 pauseStartTimestamp = Date.now();
                 
                 pauseIcon.classList.add('hidden');
@@ -1655,6 +1658,7 @@
                 pauseText.textContent = t.resume;
                 
                 document.getElementById('race-time').classList.add('animate-pulse'); // Visual feedback
+                document.getElementById('telemetry-grid').classList.add('opacity-50'); // Dim telemetry
                 
                 // Show Yellow Flag
                 yellowFlagOverlay.classList.remove('hidden');
@@ -1680,6 +1684,7 @@
                 pauseText.textContent = t.pause;
                 
                 document.getElementById('race-time').classList.remove('animate-pulse');
+                document.getElementById('telemetry-grid').classList.remove('opacity-50');
                 
                 // Hide Yellow Flag
                 yellowFlagOverlay.classList.add('hidden');
@@ -2187,15 +2192,33 @@
             document.getElementById('resultsModal').classList.remove('open');
             setTimeout(()=>document.getElementById('resultsModal').classList.add('hidden'),300);
             document.getElementById('race-time').textContent = "00:00.000";
-            isRaceActive=false; clearInterval(raceIntervalId); startRaceBtn.disabled=false;
+            isRaceActive=false; 
+            if(raceIntervalId) { clearInterval(raceIntervalId); raceIntervalId = null; }
+            startRaceBtn.disabled=false;
             pauseRaceBtn.disabled = true; // DISABLE PAUSE
+            
+            // Revert pause state completely
             isPaused = false;
+            pauseIcon.classList.remove('hidden');
+            playIcon.classList.add('hidden');
+            pauseText.textContent = translations[currentLang].pause;
+            document.getElementById('race-time').classList.remove('animate-pulse');
+            document.getElementById('telemetry-grid').classList.remove('opacity-50');
+            
             yellowFlagOverlay.classList.add('hidden'); // Ensure hidden on restart
         };
+        
+        // Corregido: Asignar los eventos a los nuevos botones independientes
         calibrateBtnP1.onclick = () => runAutoCalibration(1);
         calibrateBtnP2.onclick = () => runAutoCalibration(2);
+        
         exportExcelBtn.onclick = exportToExcel;
-        pauseRaceBtn.onclick = togglePause;
+        
+        // Uso de EventListener puro para máxima fiabilidad en móviles
+        pauseRaceBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             togglePause();
+        });
         
         // Tutorial
         closeTutorialBtn.onclick = () => {
@@ -2298,8 +2321,20 @@
 
         startRaceBtn.onclick = startRace;
         resetRaceBtn.onclick = () => { 
-            isRaceActive=false; clearInterval(raceIntervalId); 
-            startRaceBtn.disabled=false; falseStartAlert.classList.remove('show'); 
+            isRaceActive=false; 
+            if(raceIntervalId) { clearInterval(raceIntervalId); raceIntervalId = null; }
+            startRaceBtn.disabled=false; 
+            pauseRaceBtn.disabled=true; // Asegurar bloqueo del boton pausa
+            
+            // Limpiar estado de pausa visual
+            isPaused = false;
+            pauseIcon.classList.remove('hidden');
+            playIcon.classList.add('hidden');
+            pauseText.textContent = translations[currentLang].pause;
+            document.getElementById('race-time').classList.remove('animate-pulse');
+            document.getElementById('telemetry-grid').classList.remove('opacity-50');
+            
+            falseStartAlert.classList.remove('show'); 
             yellowFlagOverlay.classList.add('hidden'); // Ensure hidden on full reset
         };
         centralConfigBtn.onclick = () => configPanel.classList.toggle('open');
