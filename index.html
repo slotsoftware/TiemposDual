@@ -6,9 +6,17 @@
     <title>KronoDual - Gold Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         body { 
-            background: linear-gradient(180deg, #000000 0%, #1c190b 50%, #383008 100%);
+            /* Se ha añadido la imagen de fondo 'fomdo.jpeg'. 
+               El linear-gradient actúa como una capa semitransparente para oscurecer la imagen y que el texto sea legible. */
+            background-color: #1c190b;
+            background-image: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(28,25,11,0.75) 50%, rgba(56,48,8,0.9) 100%), url('fomdo.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
             font-family: sans-serif; 
             color: #fff;
         }
@@ -132,6 +140,7 @@
 
         <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
 
+            <!-- Panel Adquisición -->
             <div class="gold-panel rounded-3xl p-6 md:p-8 relative flex flex-col justify-between">
                 <div class="absolute -top-3 -right-3 bg-black text-yellow-400 text-[9px] font-bold px-3 py-1 rounded-full border border-yellow-500 shadow-xl">LICENCIA GOLD</div>
                 
@@ -158,6 +167,7 @@
                 </a>
             </div>
 
+            <!-- Panel Login -->
             <div class="chrome-panel rounded-3xl p-6 md:p-8 flex flex-col">
                 <h2 class="text-lg md:text-xl font-bold text-white mb-6 flex items-center gold-text">
                     <i class="fas fa-fingerprint mr-3"></i> AREA CLIENTE
