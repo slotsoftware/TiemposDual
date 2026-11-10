@@ -353,11 +353,11 @@
         /* BOTONES DE CONTROL ESTILO APPLE DARK */
         .race-control-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 10px 16px; border-radius: 14px;
+            padding: 10px 12px; border-radius: 14px;
             background: #2c2c2e;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
-            font-size: 0.85rem; font-weight: 600; color: #f5f5f7; text-transform: uppercase;
+            font-size: 0.8rem; font-weight: 600; color: #f5f5f7; text-transform: uppercase;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
             letter-spacing: 0.04em;
             text-shadow: none;
@@ -376,11 +376,22 @@
         
         /* Botón INICIAR (Slate Blue Suave) */
         #start-race-btn.race-control-btn { 
-            background: #4c6ef5; background: #4a6fa5; border-color: rgba(255,255,255,0.12); color: #ffffff; 
+            background: #4a6fa5; border-color: rgba(255,255,255,0.12); color: #ffffff; 
             box-shadow: 0 4px 14px rgba(74, 111, 165, 0.3); 
         }
         #start-race-btn.race-control-btn:hover:not(:disabled) { 
             background: #587fb8; box-shadow: 0 6px 18px rgba(74, 111, 165, 0.4); border-color: rgba(255,255,255,0.2); color: #fff;
+        }
+
+        /* Botón PAUSAR PRINCIPAL (Ámbar / Bandera Amarilla) */
+        #main-pause-btn.race-control-btn {
+            background: rgba(255, 159, 10, 0.18); border-color: rgba(255, 159, 10, 0.4); color: #ffd60a;
+        }
+        #main-pause-btn.race-control-btn:hover:not(:disabled) {
+            background: #ff9f0a; border-color: #ff9f0a; color: #000000; box-shadow: 0 4px 16px rgba(255, 159, 10, 0.4);
+        }
+        #main-pause-btn.race-control-btn.is-paused {
+            background: #30d158; border-color: #30d158; color: #ffffff; box-shadow: 0 4px 16px rgba(48, 209, 88, 0.4);
         }
         
         /* Botón CONFIG (Secondary System Fill Dark) */
@@ -399,7 +410,7 @@
             background: #ff453a; border-color: #ff453a; color: #ffffff; box-shadow: 0 4px 16px rgba(255, 69, 58, 0.4); 
         }
 
-        /* Botón PAUSE (Dark Pill) */
+        /* Botón PAUSE en Telemetría (Dark Pill) */
         #pause-race-btn {
             background-color: #3a3a3c;
             border: 1px solid rgba(255,255,255,0.14);
@@ -462,20 +473,20 @@
         th { color: #98989d; text-transform: uppercase; font-weight: 600; font-size: 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255,255,255,0.03); }
         tr:hover td { background: rgba(10, 132, 255, 0.08); }
 
-        /* Notificación de Récord estilo Dynamic Island / Toast */
+        /* Notificación de Récord EN MEDIO DE LA PANTALLA DE VIDEO */
         #record-notification {
-            position: fixed; top: 32px; left: 50%; transform: translate(-50%, -20px) scale(0.95);
-            background: rgba(44, 44, 46, 0.95);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.75);
+            background: rgba(28, 28, 30, 0.92);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            color: #ffffff; padding: 14px 28px; border-radius: 999px;
-            font-size: 1.1rem; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
-            z-index: 150; opacity: 0; pointer-events: none;
+            color: #ffd60a; padding: 18px 36px; border-radius: 24px;
+            font-size: 1.5rem; font-weight: 900; border: 2px solid rgba(255, 214, 10, 0.5);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(255, 214, 10, 0.25);
+            z-index: 65; opacity: 0; pointer-events: none;
             transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); white-space: nowrap;
-            text-transform: uppercase; letter-spacing: 0.05em;
+            text-transform: uppercase; letter-spacing: 0.06em; text-align: center;
         }
-        #record-notification.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+        #record-notification.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         
         /* Alerta Salida Nula */
         #false-start-alert {
@@ -623,8 +634,6 @@
             </div>
             
             <div class="flex items-center gap-3 mt-2 sm:mt-0">
-                 <!-- Botón Tutorial Manual ELIMINADO -->
-
                  <button id="history-btn" class="flex items-center text-amber-900 hover:text-black transition-all px-3.5 py-1.5 rounded-full bg-black/5 hover:bg-black/10 group" title="Ver Historial">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history mr-1.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/><path d="M12 7v5l4 2"/></svg>
                     <span class="text-xs font-semibold tracking-wide" data-lang-key="history_btn">Historial</span>
@@ -663,26 +672,33 @@
             </div>
         </div>
 
-        <!-- CONTROL BUTTONS COMPACT -->
-        <div class="w-full flex space-x-3 mb-4">
-            <button id="start-race-btn" class="flex-1 race-control-btn disabled:opacity-50 disabled:cursor-not-allowed">
+        <!-- CONTROL BUTTONS COMPACT (CON BOTÓN DE PAUSA Y REANUDAR PRINCIPAL) -->
+        <div class="w-full grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <button id="start-race-btn" class="race-control-btn disabled:opacity-50 disabled:cursor-not-allowed">
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="control-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg> <span data-lang-key="start_race">INICIAR</span>
                 </span>
             </button>
-            <button id="central-config-btn" class="flex-1 race-control-btn disabled:opacity-50 disabled:cursor-not-allowed">
+            <button id="main-pause-btn" class="race-control-btn disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <span>
+                    <svg id="main-pause-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="control-icon"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    <svg id="main-play-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="control-icon hidden"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span id="main-pause-text" data-lang-key="pause">PAUSAR</span>
+                </span>
+            </button>
+            <button id="central-config-btn" class="race-control-btn disabled:opacity-50 disabled:cursor-not-allowed">
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="control-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span data-lang-key="config">CONFIG</span>
                 </span>
             </button>
-            <button id="reset-race-btn" class="flex-1 race-control-btn disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <button id="reset-race-btn" class="race-control-btn disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="control-icon"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg> <span data-lang-key="reset_race">REINICIAR</span>
                 </span>
             </button>
         </div>
         
-        <!-- CONFIG PANEL (MOVED DOWN) -->
+        <!-- CONFIG PANEL -->
         <div id="config-panel" class="gold-panel w-full mb-4">
             <h2 class="text-sm neon-gold-title mb-4 border-b border-amber-700/20 pb-2.5 flex items-center justify-start">
                 <span class="mr-2">⚙️</span> <span data-lang-key="config_title">Configuración</span>
@@ -790,7 +806,7 @@
                         <input type="number" id="track-length-input" value="15" min="1" step="0.5" class="gold-input w-full p-2 rounded-lg text-xs" />
                     </div>
                     
-                    <!-- NUEVO SELECTOR TIPO DE CARRERA -->
+                    <!-- SELECTOR TIPO DE CARRERA -->
                     <div>
                         <label class="block text-[11px] font-semibold text-amber-800 mb-1 uppercase" data-lang-key="race_condition_label">Tipo de Carrera</label>
                         <div class="flex gap-2">
@@ -838,7 +854,7 @@
                         </div>
                     </div>
                 </div>
-                 <!-- NUEVA SECCION: SEGURIDAD -->
+                 <!-- SECCION: SEGURIDAD -->
                  <div class="mt-4 flex flex-col sm:flex-row gap-4 items-center justify-center p-3.5 bg-black/5 rounded-xl border border-amber-200">
                     <label class="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -879,6 +895,9 @@
             <div id="video-container">
                 <video id="webcam-feed" class="w-full" autoplay playsinline></video>
                 
+                <!-- NOTIFICACIÓN DE RÉCORD EN MEDIO DE LA PANTALLA DE VIDEO -->
+                <div id="record-notification">🏆 ¡NUEVO RÉCORD!</div>
+
                 <!-- ALERT DE CALIBRACION -->
                 <div id="calib-overlay" class="calib-overlay">
                     <div class="spinner"></div>
@@ -886,14 +905,16 @@
                     <p class="text-xs mt-2 text-white/90 font-medium bg-white/10 px-4 py-1.5 rounded-full" data-lang-key="calibrating_desc">Mantén la pista despejada</p>
                 </div>
 
-                <!-- ALERT BANDERA AMARILLA -->
-                <div id="yellow-flag-overlay" class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-amber-500/30 z-50 hidden backdrop-blur-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="#ffcc00" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse drop-shadow-lg mx-auto"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
-                    <h2 class="text-3xl sm:text-4xl font-arial font-black text-white uppercase tracking-wider mt-3 text-center drop-shadow-md" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
-                    <div class="mt-4 flex gap-2 justify-center">
-                        <div class="w-3 h-3 bg-white rounded-full animate-ping"></div>
-                        <div class="w-3 h-3 bg-white rounded-full animate-ping delay-75"></div>
-                        <div class="w-3 h-3 bg-white rounded-full animate-ping delay-150"></div>
+                <!-- ALERT BANDERA AMARILLA EN MEDIO DEL VIDEO -->
+                <div id="yellow-flag-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/75 z-50 hidden backdrop-blur-md p-4">
+                    <div class="bg-amber-500/20 border-2 border-amber-400 rounded-3xl p-6 flex flex-col items-center justify-center shadow-2xl max-w-sm w-full text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="#ffcc00" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce drop-shadow-lg mx-auto"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                        <h2 class="text-2xl sm:text-3xl font-arial font-black text-amber-400 uppercase tracking-wider mt-2 drop-shadow-md" data-lang-key="flag_yellow">BANDERA AMARILLA</h2>
+                        <p class="text-xs text-white/80 uppercase tracking-widest mt-1 font-semibold">Carrera en Pausa</p>
+                        <button id="overlay-resume-btn" class="mt-5 bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 px-6 rounded-full shadow-lg transition transform active:scale-95 flex items-center gap-2 text-sm uppercase tracking-wider">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            <span data-lang-key="resume">REANUDAR</span>
+                        </button>
                     </div>
                 </div>
 
@@ -1078,7 +1099,7 @@
                 </div>
             </div>
             
-            <!-- GRID DE DETALLES - AÑADIDO ID Y IDs A LAS TARJETAS -->
+            <!-- GRID DE DETALLES -->
             <div id="results-grid" class="grid grid-cols-2 gap-5 mb-6 text-left">
                 <!-- P1 Summary -->
                 <div id="p1-summary-card" class="bg-yellow-100/50 p-4 rounded-2xl border border-yellow-400">
@@ -1126,9 +1147,6 @@
             <button id="modal-restart-btn" class="w-full bg-[#007aff] text-white font-semibold py-3.5 rounded-xl hover:bg-[#0071e3] transition shadow-sm text-base tracking-wider uppercase font-arial" data-lang-key="restart_btn">VOLVER A EMPEZAR</button>
         </div>
     </div>
-    
-    <!-- NOTIFICACION DE RECORD -->
-    <div id="record-notification">¡NUEVO RÉCORD!</div>
 
     <script>
         // --- TRANSLATIONS ---
@@ -1304,6 +1322,13 @@
         const calibrateBtnP1 = document.getElementById('calibrate-btn-p1');
         const calibrateBtnP2 = document.getElementById('calibrate-btn-p2');
         const calibOverlay = document.getElementById('calib-overlay');
+        
+        // Botones de Pausa (Principal, Telemetría y Overlay Bandera Amarilla)
+        const mainPauseBtn = document.getElementById('main-pause-btn');
+        const mainPauseIcon = document.getElementById('main-pause-icon');
+        const mainPlayIcon = document.getElementById('main-play-icon');
+        const mainPauseText = document.getElementById('main-pause-text');
+        const overlayResumeBtn = document.getElementById('overlay-resume-btn');
         const pauseRaceBtn = document.getElementById('pause-race-btn');
         const pauseIcon = document.getElementById('pause-icon');
         const playIcon = document.getElementById('play-icon');
@@ -1320,12 +1345,11 @@
         const falseStartAlert = document.getElementById('false-start-alert');
         const falseStartPlayerName = document.getElementById('false-start-player');
         const exportExcelBtn = document.getElementById('export-excel-btn');
-        // helpBtn eliminado
         const gameModeSelect = document.getElementById('game-mode-select'); 
         const languageSelect = document.getElementById('language-select');
-        const raceConditionSelect = document.getElementById('race-condition-select'); // NEW
-        const timeLimitSelect = document.getElementById('time-limit-select'); // NEW
-        const yellowFlagOverlay = document.getElementById('yellow-flag-overlay'); // NEW
+        const raceConditionSelect = document.getElementById('race-condition-select');
+        const timeLimitSelect = document.getElementById('time-limit-select');
+        const yellowFlagOverlay = document.getElementById('yellow-flag-overlay');
         
         // Audio
         const synth = new Tone.Synth().toDestination();
@@ -1367,10 +1391,10 @@
                 // State for game
                 laps: 0, lapHistory: [], bestLap: Infinity, lapStartTime: 0, lastRecordTime: 0,
                 totalTime: 0, isBlocked: false, finished: false,
-                hasCrossedStart: false, // FLAG for first crossing logic
+                hasCrossedStart: false,
                 
                 // Smart Detection State
-                sensitivity: 20, // Delta threshold
+                sensitivity: 20,
                 baseBrightness: null,
                 soundTone: "C5"
             },
@@ -1387,7 +1411,7 @@
                 // State for game
                 laps: 0, lapHistory: [], bestLap: Infinity, lapStartTime: 0, lastRecordTime: 0,
                 totalTime: 0, isBlocked: false, finished: false,
-                hasCrossedStart: false, // FLAG for first crossing logic
+                hasCrossedStart: false,
                 
                 // Smart Detection State
                 sensitivity: 20,
@@ -1401,24 +1425,20 @@
             currentLang = lang;
             const t = translations[lang];
             
-            // Update elements with data-lang-key
             document.querySelectorAll('[data-lang-key]').forEach(el => {
                 const key = el.getAttribute('data-lang-key');
                 if(t[key]) el.textContent = t[key];
-                // Handle option text manually if needed for selects that are dynamic
                 if (el.tagName === 'OPTION' && t[key]) el.text = t[key];
             });
             
-            // Dynamic Updates
-            // Video Status
             if (isProcessing) {
                 videoStatus.textContent = t.video_status_ready;
             } else {
                 videoStatus.textContent = t.video_status_init;
             }
-            
             // Pause Button
             pauseText.textContent = isPaused ? t.resume : t.pause;
+            mainPauseText.textContent = isPaused ? t.resume : t.pause;
             
             // Save preference
             localStorage.setItem('krono_lang', lang);
@@ -1429,11 +1449,10 @@
         function speak(textKey, suffix = "") {
             if (!voiceToggle.checked) return;
             const t = translations[currentLang];
-            let msgText = t[textKey] || textKey; // Fallback to key if not found (for dynamic names)
+            let msgText = t[textKey] || textKey;
             msgText += suffix;
             
             const utter = new SpeechSynthesisUtterance(msgText);
-            // Set voice language
             if (currentLang === 'es') utter.lang = 'es-ES';
             else if (currentLang === 'en') utter.lang = 'en-US';
             else if (currentLang === 'fr') utter.lang = 'fr-FR';
@@ -1454,7 +1473,6 @@
             const telemetryGrid = document.getElementById('telemetry-grid');
             
             if (activePlayers === 1) {
-                // Solo Mode
                 p2Config.style.display = 'none';
                 p2TopStats.style.display = 'none';
                 p2Roi.style.display = 'none';
@@ -1466,11 +1484,10 @@
                 telemetryGrid.style.gridTemplateColumns = '1fr';
                 document.getElementById('calib-container-p2').style.display = 'none';
             } else {
-                // Duel Mode
                 p2Config.style.display = 'block';
                 p2TopStats.style.display = 'block';
-                if (isProcessing) p2Roi.style.display = 'block'; // Only show ROI if cam active
-                p2Telemetry.style.display = 'flex'; // It's flex col normally
+                if (isProcessing) p2Roi.style.display = 'block';
+                p2Telemetry.style.display = 'flex';
                 
                 topGrid.classList.add('grid-cols-2', 'divide-x');
                 topGrid.classList.remove('grid-cols-1');
@@ -1500,8 +1517,6 @@
             const p = players[pId-1];
             let val = parseInt(document.getElementById(p.thresholdId).value);
             val = Math.max(5, Math.min(100, val + delta));
-            
-            // Actualizar ambos sliders y displays
             updateThresholdDisplays(pId, val);
         }
 
@@ -1509,11 +1524,9 @@
             const p = players[pId-1];
             p.sensitivity = parseInt(val);
             
-            // Actualizar Slider Config
             document.getElementById(p.thresholdId).value = val;
             document.getElementById(p.thresholdDispId).textContent = val;
             
-            // Actualizar Slider Principal
             const mainSlider = document.getElementById(`main-sens-p${pId}`);
             const mainDisplay = document.getElementById(`main-calib-sens-p${pId}`);
             
@@ -1522,11 +1535,9 @@
         }
         
         function syncSliders() {
-            // Eventos para sliders del panel de configuración
             document.getElementById('p1-threshold').addEventListener('input', (e)=> updateThresholdDisplays(1, e.target.value));
             document.getElementById('p2-threshold').addEventListener('input', (e)=> updateThresholdDisplays(2, e.target.value));
             
-            // Eventos para los nuevos sliders de la pantalla principal
             const mainS1 = document.getElementById('main-sens-p1');
             const mainS2 = document.getElementById('main-sens-p2');
             
@@ -1550,7 +1561,6 @@
                     isProcessing = true;
                     processVideo();
                     
-                    // Show ROIs based on game mode
                     document.getElementById('roi-p1').style.display = 'block';
                     if (activePlayers === 2) {
                         document.getElementById('roi-p2').style.display = 'block';
@@ -1593,16 +1603,14 @@
             const w = Math.ceil(vw * (parseFloat(rs.width)||10)/100);
             const h = Math.ceil(vh * (parseFloat(rs.height)||10)/100);
             
-            // Optimization: Only get the small patch data
             const ctx = canvas.getContext('2d', {willReadFrequently:true});
             ctx.drawImage(videoElement, x, y, w, h, 0, 0, w, h);
             
             try {
                 const d = ctx.getImageData(0,0,w,h).data;
                 let t = 0; 
-                // Sample every 4th pixel for speed, adequate for brightness avg
                 for(let i=0; i<d.length; i+=16) { 
-                    t+=(d[i]+d[i+1]+d[i+2]); // Sum RGB
+                    t+=(d[i]+d[i+1]+d[i+2]);
                 }
                 return (t/3) / (d.length/16);
             } catch(e){return 0;}
@@ -1614,17 +1622,14 @@
             const now = Date.now();
 
             players.forEach(p => {
-                // SKIP PLAYER 2 IF MODE IS 1
                 if (p.id > activePlayers) return;
 
                 const roi = document.getElementById(p.roiId);
                 const currentBri = getRoiBrightness(roi);
                 document.getElementById(p.valId).textContent = currentBri.toFixed(0);
                 
-                // Initialize baseline if needed
                 if (p.baseBrightness === null) p.baseBrightness = currentBri;
 
-                // Smart Detection Logic (Differential)
                 const diff = Math.abs(currentBri - p.baseBrightness);
                 const crossed = diff > p.sensitivity;
 
@@ -1632,66 +1637,48 @@
                     roi.classList.add('roi-detected');
                 } else {
                     roi.classList.remove('roi-detected');
-                    // Slow adaptation to ambient light changes if not crossed
-                    // This prevents the "ghost" of a car from becoming the new background
                     if (!isCalibrating) {
                         p.baseBrightness = (p.baseBrightness * 0.95) + (currentBri * 0.05);
                     }
                 }
 
-                // Logic Dispatch
                 if (!isCalibrating) {
-                    
-                    // 0. Pre-Race Test Mode (Cuando no hay carrera activa)
                     if (!isRaceActive && !isCountdown && crossed && !isPaused) {
                          document.getElementById(p.msgId).textContent = "TEST OK";
                     } else if (!isRaceActive) {
                          document.getElementById(p.msgId).textContent = "";
                     }
 
-                    // 1. False Start
                     if (isCountdown && !raceAborted) {
                          if (crossed && !p.isBlocked) {
                              handleFalseStart(p);
                              p.isBlocked = true;
                          }
                     }
-                    // 2. Normal Race
                     else if (isRaceActive && isDetectionReady && !p.finished && !isPaused) {
-                        
-                        // --- LÓGICA DE TIEMPO CIEGO ---
-                        // Si estamos en el periodo de "cálculo IA", ignoramos todo
-                        // Usamos la variable dinámica blindTimeMs
                         if (now - p.lastRecordTime < blindTimeMs) {
-                             // Do nothing, just wait.
-                             // La UI ya muestra el bloqueo (roi-locked)
                              return;
                         }
 
                         if (crossed && !p.isBlocked) {
                             p.isBlocked = true;
-                            // KEY CHANGE: Check if first crossing
                             if (!p.hasCrossedStart) {
-                                // First Crossing Logic - IGNORE TIME, JUST START CLOCK
                                 p.hasCrossedStart = true;
-                                p.lapStartTime = Date.now(); // Reset Lap Timer
-                                p.lastRecordTime = Date.now(); // IMPORTANT: Set debounce time now
-                                activateBlindTime(p); // LOCK
+                                p.lapStartTime = Date.now();
+                                p.lastRecordTime = Date.now();
+                                activateBlindTime(p);
                                 synth.triggerAttackRelease(p.soundTone, "0.1");
                                 document.getElementById(p.msgId).textContent = "GO!";
                             } else {
-                                // Subsequent Crossings Logic
                                 document.getElementById(p.msgId).textContent = "OK";
                                 recordLap(p);
                             }
                         } else if (!crossed && p.isBlocked) {
                             p.isBlocked = false;
-                            // Clear momentary message after leaving sensor
                             if(isRaceActive) setTimeout(() => document.getElementById(p.msgId).textContent = "", 500);
                         }
                     }
                     
-                    // General Debounce Reset
                     if (!crossed && p.isBlocked && !isCountdown) {
                         p.isBlocked = false;
                     }
@@ -1704,7 +1691,6 @@
         function activateBlindTime(p) {
             const roiEl = document.getElementById(p.roiId);
             roiEl.classList.add('roi-locked');
-            // Usamos blindTimeMs dinámico
             setTimeout(() => {
                 roiEl.classList.remove('roi-locked');
             }, blindTimeMs);
@@ -1716,10 +1702,9 @@
             isCalibrating = true;
             calibOverlay.classList.add('active');
             
-            // 1. Measure Baseline
             let samples = 0;
             const stats = { sum: 0, min: 255, max: 0 };
-            const framesToRead = 60; // Approx 1-2 seconds
+            const framesToRead = 60;
             const roiEl = document.getElementById(`roi-p${pId}`);
             
             const readFrame = () => {
@@ -1740,11 +1725,10 @@
         }
         
         function finishCalibration(stats, pId) {
-            // Set Base Brightness for Specific Player
             const p = players[pId - 1];
             p.baseBrightness = stats.sum / 60;
             const noise = Math.max(stats.max - p.baseBrightness, p.baseBrightness - stats.min);
-            const safeMargin = 15; // Minimum diff required
+            const safeMargin = 15;
             const newSens = Math.max(safeMargin, Math.ceil(noise * 1.5));
             
             updateThresholdDisplays(pId, newSens);
@@ -1769,11 +1753,35 @@
             document.querySelectorAll('.light').forEach(l => l.className = "light");
         }
 
-        // --- PAUSE LOGIC ---
+        // --- PAUSE & YELLOW FLAG LOGIC ---
+        function updatePauseButtonsUI() {
+            const t = translations[currentLang];
+            if (isPaused) {
+                pauseIcon.classList.add('hidden');
+                playIcon.classList.remove('hidden');
+                pauseText.textContent = t.resume;
+                
+                mainPauseIcon.classList.add('hidden');
+                mainPlayIcon.classList.remove('hidden');
+                mainPauseText.textContent = t.resume;
+                mainPauseBtn.classList.add('is-paused');
+            } else {
+                pauseIcon.classList.remove('hidden');
+                playIcon.classList.add('hidden');
+                pauseText.textContent = t.pause;
+                
+                mainPauseIcon.classList.remove('hidden');
+                mainPlayIcon.classList.add('hidden');
+                mainPauseText.textContent = t.pause;
+                mainPauseBtn.classList.remove('is-paused');
+            }
+        }
+
         function togglePause() {
             if (!isRaceActive && !isPaused) return; // Cannot pause if not racing
             
             isPaused = !isPaused;
+            updatePauseButtonsUI();
             
             if (isPaused) {
                 // START PAUSE
@@ -1784,16 +1792,10 @@
                 }
                 pauseStartTimestamp = Date.now();
                 
-                pauseIcon.classList.add('hidden');
-                playIcon.classList.remove('hidden');
-                
-                const t = translations[currentLang];
-                pauseText.textContent = t.resume;
-                
                 document.getElementById('race-time').classList.add('animate-pulse'); // Visual feedback
                 document.getElementById('telemetry-grid').classList.add('opacity-50'); // Dim telemetry
                 
-                // Show Yellow Flag
+                // Show Yellow Flag in the middle of the video
                 yellowFlagOverlay.classList.remove('hidden');
                 
             } else {
@@ -1810,12 +1812,6 @@
                 });
                 
                 isRaceActive = true;
-                pauseIcon.classList.remove('hidden');
-                playIcon.classList.add('hidden');
-                
-                const t = translations[currentLang];
-                pauseText.textContent = t.pause;
-                
                 document.getElementById('race-time').classList.remove('animate-pulse');
                 document.getElementById('telemetry-grid').classList.remove('opacity-50');
                 
@@ -1837,17 +1833,16 @@
 
         function startRace() {
             configPanel.classList.remove('open');
-            startRaceBtn.disabled = true; resetRaceBtn.disabled = true; pauseRaceBtn.disabled = true;
+            startRaceBtn.disabled = true; 
+            resetRaceBtn.disabled = true; 
+            pauseRaceBtn.disabled = true;
+            mainPauseBtn.disabled = true;
             falseStartAlert.classList.remove('show');
             yellowFlagOverlay.classList.add('hidden'); // Ensure flag is hidden on start
             
             // RESET PAUSE STATE
             isPaused = false;
-            pauseIcon.classList.remove('hidden');
-            playIcon.classList.add('hidden');
-            
-            const t = translations[currentLang];
-            pauseText.textContent = t.pause;
+            updatePauseButtonsUI();
             
             // SETUP MODE
             raceMode = raceConditionSelect.value;
@@ -1855,30 +1850,26 @@
             if (raceMode === 'laps') {
                 totalLapsTarget = lapLimitSelect.value==='Infinity'?Infinity:parseInt(lapLimitSelect.value);
             } else {
-                // Time mode logic
-                totalLapsTarget = Infinity; // No lap limit
-                raceDurationTarget = parseInt(timeLimitSelect.value) * 60000; // Minutes to ms
+                totalLapsTarget = Infinity;
+                raceDurationTarget = parseInt(timeLimitSelect.value) * 60000;
             }
             
-            // LEER EL TIEMPO DE SEGURIDAD
             blindTimeMs = parseInt(safetyTimeSelect.value);
 
             players.forEach(p => {
                 p.soundTone = document.getElementById(p.soundId).value;
                 p.laps=0; p.lapHistory=[]; p.bestLap=Infinity; p.totalTime=0; p.lastRecordTime=0; 
                 p.finished=false; p.isBlocked=false; 
-                p.hasCrossedStart=false; // RESET FLAG
+                p.hasCrossedStart=false;
                 
                 updatePlayerUI(p);
                 document.getElementById(p.currentLapId).textContent = "ESPERANDO...";
                 document.getElementById(p.avgTimeId).textContent = "--.---";
                 document.getElementById(p.gapId).textContent = "--";
                 
-                // Clear any leftover lock visual
                 document.getElementById(p.roiId).classList.remove('roi-locked');
             });
             
-            // Set initial timer text based on mode
             if (raceMode === 'time') {
                 document.getElementById('race-time').textContent = formatTime(raceDurationTarget);
             } else {
@@ -1911,6 +1902,7 @@
                 isRaceActive=true; isDetectionReady=true; 
                 resetRaceBtn.disabled=false;
                 pauseRaceBtn.disabled=false; // ENABLE PAUSE
+                mainPauseBtn.disabled=false;
                 
                 raceStartTime=Date.now();
                 players.forEach(p=>p.lapStartTime=raceStartTime);
@@ -1923,25 +1915,19 @@
             raceIntervalId = setInterval(()=>{
                 const now = Date.now();
                 
-                // MAIN TIMER LOGIC
                 if (raceMode === 'time') {
-                    // Count down
                     let remaining = raceDurationTarget - (now - raceStartTime);
                     if (remaining <= 0) {
                         remaining = 0;
-                        // Trigger End Race if time expired
                         if (isRaceActive) endRace();
                     }
                     document.getElementById('race-time').textContent = formatTime(remaining);
                 } else {
-                    // Count up
                     document.getElementById('race-time').textContent = formatTime(now - raceStartTime);
                 }
 
                 players.forEach(p => {
-                    // Solo actualizar si el jugador está activo
                     if(p.id <= activePlayers && !p.finished) {
-                        // Only show time if race started for player
                         if (p.hasCrossedStart) {
                             const elap = now - p.lapStartTime;
                             const sec = Math.floor(elap/1000);
@@ -1958,13 +1944,12 @@
             const now = Date.now();
             if (now - p.lastRecordTime < blindTimeMs) return; 
             
-            // DOUBLE CHECK: If logic failed and this is somehow first crossing, abort
             if (!p.hasCrossedStart) {
                  p.hasCrossedStart = true; p.lapStartTime = now; p.lastRecordTime = now; activateBlindTime(p); return;
             }
 
             p.lastRecordTime = now;
-            activateBlindTime(p); // LOCK SENSORS
+            activateBlindTime(p);
 
             const lapTime = now - p.lapStartTime;
             p.lapHistory.push(lapTime);
@@ -1972,26 +1957,23 @@
             p.totalTime = now - raceStartTime; // Update total run time for tie-breaking
             p.lapStartTime = now;
             
+            const name = document.getElementById(p.nameId).value;
             let isNewRecord = false;
             if (lapTime < p.bestLap) {
                 p.bestLap = lapTime;
-                showNotification(`RÉCORD P${p.id}!`);
+                showNotification(`🏆 ¡RÉCORD ${name.toUpperCase()}! (${formatTime(lapTime)})`);
                 isNewRecord = true;
             }
 
             synth.triggerAttackRelease(p.soundTone, "0.1");
             updatePlayerUI(p);
             
-            const name = document.getElementById(p.nameId).value;
-            
             // --- CAMBIO: SOLO HABLA SI ES RÉCORD ---
             if (isNewRecord) {
                 const lapTimeSec = (lapTime/1000).toFixed(2);
                 speak('voice_record', name + "! " + lapTimeSec);
             }
-            // ---------------------------------------
 
-            // Only check lap based limits in Laps mode
             if(raceMode === 'laps' && totalLapsTarget !== Infinity) {
                 const remaining = totalLapsTarget - p.laps;
                 if(remaining === 5) {
@@ -2007,7 +1989,6 @@
                     document.getElementById(p.currentLapId).textContent = "META";
                     polySynth.triggerAttackRelease(["E6"], "0.2");
                     
-                    // Check if race ends
                     if (activePlayers === 1 && players[0].finished) {
                          endRace();
                     } else if (activePlayers === 2 && players.every(pl=>pl.finished)) {
@@ -2019,7 +2000,6 @@
         }
 
         function updatePlayerUI(p) {
-            // Display depends on mode
             if (raceMode === 'time') {
                  document.getElementById(p.lapCountId).textContent = `V: ${p.laps}`;
             } else {
@@ -2049,7 +2029,6 @@
                  const diff = t1 - t2;
                  const diffSec = (Math.abs(diff)/1000).toFixed(1);
                  
-                 // Logic change for Time Mode: Whoever has MORE LAPS is winning
                  if (raceMode === 'time') {
                      if (players[0].laps > players[1].laps) {
                          document.getElementById(players[0].gapId).textContent = "LIDER";
@@ -2064,7 +2043,6 @@
                          document.getElementById(players[0].gapId).className = "telemetry-data font-arial text-red-600";
                          return;
                      }
-                     // If laps equal, fall back to standard time gap logic below
                  }
 
                  if (diff < 0) {
@@ -2084,61 +2062,48 @@
         function endRace() {
             isRaceActive = false; clearInterval(raceIntervalId);
             pauseRaceBtn.disabled = true; // DISABLE PAUSE
+            mainPauseBtn.disabled = true;
             
             const p1 = players[0]; const p2 = players[1];
             let winner = null;
             
             if (activePlayers === 1) {
-                winner = p1; // Solo hay un ganador posible
+                winner = p1;
             } else {
                 if (raceMode === 'laps') {
-                    // Logic for Laps Mode
                     if (p1.finished && p2.finished) winner = p1.totalTime < p2.totalTime ? p1 : p2;
                     else if (p1.finished) winner = p1; else if (p2.finished) winner = p2;
                     else winner = p1.laps > p2.laps ? p1 : p2;
                 } else {
-                    // Logic for Time Mode (Most laps wins)
                     if (p1.laps !== p2.laps) {
                         winner = p1.laps > p2.laps ? p1 : p2;
                     } else {
-                        // Tie breaker: whoever reached that lap count faster (totalTime tracks last crossing)
-                        // Note: totalTime is only set on finish or calc on fly. In recordLap we set p.totalTime.
-                        // However, if neither finished "normally", totalTime might be just the timestamp.
-                        // Let's use the last recorded timestamp from lapHistory if totalTime isn't set?
-                        // Actually in recordLap I added p.totalTime = now - start.
                         winner = p1.totalTime < p2.totalTime ? p1 : p2;
                     }
                 }
             }
 
-            // --- AJUSTE VISUAL DEL MODAL SEGÚN JUGADORES ---
             const grid = document.getElementById('results-grid');
             const p2Card = document.getElementById('p2-summary-card');
 
             if (activePlayers === 1) {
-                // Modo 1 Jugador: Una columna, ocultar P2
                 grid.classList.remove('grid-cols-2');
                 grid.classList.add('grid-cols-1');
                 p2Card.classList.add('hidden');
             } else {
-                // Modo 2 Jugadores: Dos columnas, mostrar P2
                 grid.classList.remove('grid-cols-1');
                 grid.classList.add('grid-cols-2');
                 p2Card.classList.remove('hidden');
             }
-            // ------------------------------------------------
 
             const wName = document.getElementById(winner.nameId).value;
             const t = translations[currentLang];
             document.getElementById('winner-text').textContent = activePlayers===1 ? t.completed : `${t.winner} ${wName}`;
             
-            // Loop solo jugadores activos
             players.forEach(p => {
                 if (p.id > activePlayers) return;
                 
                 const n = document.getElementById(p.nameId).value;
-                
-                // Fix for total time display in Time Mode if they didn't "finish" via lap limit
                 let totalT = p.finished ? p.totalTime : (p.lapHistory.length > 0 ? p.totalTime : 0);
                 
                 const lapCount = p.lapHistory.length;
@@ -2146,10 +2111,8 @@
                 const trackLen = parseFloat(trackLengthInput.value);
                 const avgSpd = avgT > 0 ? (trackLen / (avgT/1000)) * 3.6 : 0;
 
-                // Si es solo player, mostramos su nombre sin corona
                 const displayName = (activePlayers === 1) ? n : (n + (p===winner?" 👑":""));
 
-                // We need to ensure elements exist in modal too, assume standard IDs
                 const nameEl = document.getElementById(`modal-p${p.id}-name`);
                 if(nameEl) nameEl.textContent = displayName;
                 
@@ -2162,7 +2125,7 @@
                 ul.innerHTML = "";
                 p.lapHistory.forEach((lap, idx) => {
                     const li = document.createElement('li');
-                    li.className = "flex justify-between border-b border-gray-100 last:border-0 py-1 font-arial"; // Force Arial in list
+                    li.className = "flex justify-between border-b border-gray-100 last:border-0 py-1 font-arial";
                     const isBest = (lap === p.bestLap && p.bestLap !== Infinity); 
                     li.innerHTML = `<span>V${idx+1}</span> <span class="${isBest ? 'text-green-600 font-bold' : ''}">${formatTime(lap)}</span>`;
                     ul.appendChild(li);
@@ -2172,7 +2135,6 @@
             saveHistory(wName);
             document.getElementById('resultsModal').classList.remove('hidden');
             
-            // Dibujar gráfica en el modal tras quitar el display:none para tener el ancho correcto
             setTimeout(() => {
                 renderGraphToCanvas('modal-lap-graph-canvas');
                 document.getElementById('resultsModal').classList.add('open');
@@ -2209,15 +2171,14 @@
                 p.lapHistory.forEach((lap, index) => {
                     csvContent += `${index + 1},${formatTime(lap)}\n`;
                 });
-                csvContent += "\n"; // Spacer between players
+                csvContent += "\n";
             });
 
-            // 4. Create Download Link
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
             link.setAttribute("download", `krono_race_${Date.now()}.csv`);
-            document.body.appendChild(link); // Required for FF
+            document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
@@ -2228,17 +2189,14 @@
             const ctx = canvas.getContext('2d');
             
             let w = canvas.parentElement.offsetWidth;
-            // Fallback si el contenedor aún no tiene ancho
             if (w === 0) w = canvas.getBoundingClientRect().width || 500;
             
             ctx.canvas.width = w; ctx.canvas.height = 200;
             const p1d = players[0].lapHistory; const p2d = players[1].lapHistory;
             const maxL = Math.max(p1d.length, p2d.length);
             
-            // Clean
             ctx.clearRect(0,0,w,200);
 
-            // Draw Y-Axis Text
             ctx.fillStyle = '#8e8e93'; ctx.font = '10px -apple-system, sans-serif';
             ctx.fillText("TIEMPO (s)", 5, 12);
             
@@ -2254,17 +2212,17 @@
                 const x = pad + i * (gw/maxL) + 10;
                 if(p1d[i]) {
                     const h = (p1d[i]/maxT)*gh;
-                    ctx.fillStyle = '#6b8eb8'; // Soft Slate Blue
+                    ctx.fillStyle = '#6b8eb8';
                     ctx.shadowColor = 'rgba(107, 142, 184, 0.25)';
                     ctx.fillRect(x, 180-h, bw, h);
                 }
                 if(activePlayers === 2 && p2d[i]) {
                     const h = (p2d[i]/maxT)*gh;
-                    ctx.fillStyle = '#d08770'; // Soft Terracotta / Muted Amber
+                    ctx.fillStyle = '#d08770';
                     ctx.shadowColor = 'rgba(208, 135, 112, 0.25)';
                     ctx.fillRect(x+bw, 180-h, bw, h);
                 }
-                ctx.shadowBlur = 0; // Reset for text
+                ctx.shadowBlur = 0;
                 ctx.fillStyle='#8e8e93'; ctx.font='10px -apple-system, sans-serif'; ctx.textAlign='center';
                 ctx.fillText(i+1, x+bw, 195);
             }
@@ -2274,9 +2232,12 @@
             renderGraphToCanvas('lap-graph-canvas');
         }
         
+        let recordTimeoutId = null;
         function showNotification(txt) {
-            recordNotification.textContent = txt; recordNotification.classList.add('show');
-            setTimeout(()=>recordNotification.classList.remove('show'),2000);
+            recordNotification.textContent = txt; 
+            recordNotification.classList.add('show');
+            if (recordTimeoutId) clearTimeout(recordTimeoutId);
+            recordTimeoutId = setTimeout(()=>recordNotification.classList.remove('show'), 2500);
         }
 
         // --- HISTORIAL ---
@@ -2284,7 +2245,7 @@
             const rec = {
                 date: new Date().toLocaleString(),
                 winner: winner,
-                time: formatTime(players[0].totalTime), // Simplificado para historial basico
+                time: formatTime(players[0].totalTime),
                 p1Best: formatTime(players[0].bestLap),
                 p2Best: activePlayers===2 ? formatTime(players[1].bestLap) : "N/A"
             };
@@ -2329,12 +2290,11 @@
             if(raceIntervalId) { clearInterval(raceIntervalId); raceIntervalId = null; }
             startRaceBtn.disabled=false;
             pauseRaceBtn.disabled = true; // DISABLE PAUSE
+            mainPauseBtn.disabled = true;
             
             // Revert pause state completely
             isPaused = false;
-            pauseIcon.classList.remove('hidden');
-            playIcon.classList.add('hidden');
-            pauseText.textContent = translations[currentLang].pause;
+            updatePauseButtonsUI();
             document.getElementById('race-time').classList.remove('animate-pulse');
             document.getElementById('telemetry-grid').classList.remove('opacity-50');
             
@@ -2347,10 +2307,18 @@
         
         exportExcelBtn.onclick = exportToExcel;
         
-        // Uso de EventListener puro para máxima fiabilidad en móviles
+        // Listeners para los tres puntos de control de Pausa / Reanudar
         pauseRaceBtn.addEventListener('click', (e) => {
              e.preventDefault();
              togglePause();
+        });
+        mainPauseBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             togglePause();
+        });
+        overlayResumeBtn.addEventListener('click', (e) => {
+             e.preventDefault();
+             if (isPaused) togglePause();
         });
 
         // --- DRAG AND RESIZE LOGIC ---
@@ -2413,8 +2381,6 @@
         document.addEventListener('mouseup', dragEnd);
         document.addEventListener('touchend', dragEnd);
 
-        // Los event listeners de los threshold originales se movieron a syncSliders()
-
         // SYNC TELEMETRY NAMES
         const syncTelemetryNames = () => {
             document.getElementById('p1-telemetry-name').textContent = document.getElementById('p1-name').value || 'Piloto 1';
@@ -2448,12 +2414,11 @@
             if(raceIntervalId) { clearInterval(raceIntervalId); raceIntervalId = null; }
             startRaceBtn.disabled=false; 
             pauseRaceBtn.disabled=true; // Asegurar bloqueo del boton pausa
+            mainPauseBtn.disabled=true;
             
             // Limpiar estado de pausa visual
             isPaused = false;
-            pauseIcon.classList.remove('hidden');
-            playIcon.classList.add('hidden');
-            pauseText.textContent = translations[currentLang].pause;
+            updatePauseButtonsUI();
             document.getElementById('race-time').classList.remove('animate-pulse');
             document.getElementById('telemetry-grid').classList.remove('opacity-50');
             
@@ -2465,16 +2430,14 @@
         document.getElementById('fullscreen-btn').onclick = () => !document.fullscreenElement ? document.documentElement.requestFullscreen() : document.exitFullscreen();
         
         window.onload = () => {
-             syncSliders(); // Inicializa los eventos de los sliders
-             updateThresholdDisplays(1, 20); // Valores iniciales
-             updateThresholdDisplays(2, 20); // Valores iniciales
+             syncSliders();
+             updateThresholdDisplays(1, 20);
+             updateThresholdDisplays(2, 20);
              
-             syncTelemetryNames(); // Sincroniza nombres al cargar
-             // Sync initial laps based on select value
+             syncTelemetryNames();
              totalLapsTarget = lapLimitSelect.value==='Infinity'?Infinity:parseInt(lapLimitSelect.value);
              players.forEach(p => updatePlayerUI(p));
 
-             // Check saved language
              const savedLang = localStorage.getItem('krono_lang');
              if(savedLang) {
                  languageSelect.value = savedLang;
