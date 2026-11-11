@@ -952,7 +952,7 @@
                 <div id="roi-p1" class="movable-rectangle" style="top: 25%; left: 10%;">
                     <div class="roi-label">P1 <span id="ai-badge-p1" class="hidden ml-1 text-[9px] bg-black/50 px-1.5 py-0.5 rounded text-green-300 font-mono">IA:0</span></div>
                     <div id="msg-p1" class="test-msg"></div>
-                    <div id="val-p1" class="detection-val">0</div>
+                    <div id="val-p1" class="detection-val">Dif: 0.0% | Umbral: 20</div>
                     <div class="resize-handle handle-tl"></div>
                     <div class="resize-handle handle-br"></div>
                 </div>
@@ -960,7 +960,7 @@
                 <div id="roi-p2" class="movable-rectangle" style="top: 25%; left: 60%;">
                     <div class="roi-label">P2 <span id="ai-badge-p2" class="hidden ml-1 text-[9px] bg-black/50 px-1.5 py-0.5 rounded text-green-300 font-mono">IA:0</span></div>
                     <div id="msg-p2" class="test-msg"></div>
-                    <div id="val-p2" class="detection-val">0</div>
+                    <div id="val-p2" class="detection-val">Dif: 0.0% | Umbral: 20</div>
                     <div class="resize-handle handle-tl"></div>
                     <div class="resize-handle handle-br"></div>
                 </div>
@@ -1387,6 +1387,7 @@
         let isCountdown = false;
         let raceAborted = false;
         let isCalibrating = false;
+        let isSystemReady = false;
         let raceStartTime = 0;
         let raceIntervalId = null;
         let totalLapsTarget = 10;
@@ -1414,44 +1415,20 @@
                 
                 // State for game
                 laps: 0, lapHistory: [], bestLap: Infinity, lapStartTime: 0, lastRecordTime: 0,
-                totalTime: 0, isBlocked: false, finished: false,
+                totalTime: 0, isBlocked: false, isLineBlocked: false, finished: false,
                 hasCrossedStart: false,
                 
-                // Smart Multi-Color, Anti-Bounce & Obstruction State
+                // Sistema de Detección Híbrido (Krono Dual Pro) + Memoria IA
                 sensitivity: 20,
-                baseColor: null,       // { r, g, b } de la pista vacía
-                learnedCarColor: null, // { r, g, b } aprendido del coche en movimiento
-                learnedContrastVec: null, // { dr, dg, db } firma relativa respecto a la pista (inmune a cambios de luz día a día)
-                learnedPeakDelta: null,// Pico de diferencia aprendido en cada vuelta
-                learnedPassMs: 85,     // Duración típica del cruce del coche en ms
-                learnedLapsCount: 0,   // Contador de vueltas aprendidas en la sesión
-                totalHistoricalLaps: 0,// Total de vueltas aprendidas día a día
-                daysTrainedCount: 0,   // Días distintos en los que la IA ha entrenado este coche
-                peakDeltaInPass: 0,    // Mayor delta registrado durante el cruce actual
-                peakColorInPass: null, // Color registrado en el pico del cruce actual
-                triggerStartTime: 0,   // Momento exacto en que entra el objeto al ROI
-                isObstructed: false,   // Si hay una mano u objeto tapando el sensor
-                lastTriggerEndTime: 0, // Último momento en que se despejó el sensor (anti-rebote)
-                msgTimeoutId: null,    // Temporizador del cartel TEST OK
-                soundTone: "C5"
-            },
-            {
-                id: 2,
-                nameId: 'p2-name', carId: 'p2-car',
-                roiId: 'roi-p2', valId: 'val-p2', msgId: 'msg-p2', aiBadgeId: 'ai-badge-p2',
-                lapCountId: 'p2-lap-count', currentLapId: 'p2-current-lap',
-                bestLapId: 'p2-best-lap', lastLapId: 'p2-last-lap', avgSpeedId: 'p2-avg-speed',
-                avgTimeId: 'p2-avg-time', gapId: 'p2-gap',
-                thresholdId: 'p2-threshold', thresholdDispId: 'p2-threshold-disp',
-                soundId: 'p2-sound',
-                
-                // State for game
-                laps: 0, lapHistory: [], bestLap: Infinity, lapStartTime: 0, lastRecordTime: 0,
-                totalTime: 0, isBlocked: false, finished: false,
-                hasCrossedStart: false,
-                
-                // Smart Multi-Color, Anti-Bounce & Obstruction State
-                sensitivity: 20,
+                referencePixels: null,
+                currentChangePct: 0,
+                lightShockFrames: 0,
+                framesSinceLeft: undefined,
+                wasCrossed: false,
+                roiInitialized: false,
+                stuckStartTime: 0,
+                lastTriggerMsg: "",
+                msgExpireTime: 0,
                 baseColor: null,
                 learnedCarColor: null,
                 learnedContrastVec: null,
@@ -1462,13 +1439,49 @@
                 daysTrainedCount: 0,
                 peakDeltaInPass: 0,
                 peakColorInPass: null,
-                triggerStartTime: 0,
-                isObstructed: false,
-                lastTriggerEndTime: 0,
-                msgTimeoutId: null,
+                soundTone: "C5"
+            },
+            {
+                id: 2,
+                nameId: 'p2-name', carId: 'p2-car',
+                roiId: 'roi-p2', valId: 'val-p2', msgId: 'msg-p2', aiBadgeId: 'ai-badge-p2',
+                lapCountId: 'p2-lap-count', currentLapId: 'p1-current-lap',
+                bestLapId: 'p2-best-lap', lastLapId: 'p2-last-lap', avgSpeedId: 'p2-avg-speed',
+                avgTimeId: 'p2-avg-time', gapId: 'p2-gap',
+                thresholdId: 'p2-threshold', thresholdDispId: 'p2-threshold-disp',
+                soundId: 'p2-sound',
+                
+                // State for game
+                laps: 0, lapHistory: [], bestLap: Infinity, lapStartTime: 0, lastRecordTime: 0,
+                totalTime: 0, isBlocked: false, isLineBlocked: false, finished: false,
+                hasCrossedStart: false,
+                
+                // Sistema de Detección Híbrido (Krono Dual Pro) + Memoria IA
+                sensitivity: 20,
+                referencePixels: null,
+                currentChangePct: 0,
+                lightShockFrames: 0,
+                framesSinceLeft: undefined,
+                wasCrossed: false,
+                roiInitialized: false,
+                stuckStartTime: 0,
+                lastTriggerMsg: "",
+                msgExpireTime: 0,
+                baseColor: null,
+                learnedCarColor: null,
+                learnedContrastVec: null,
+                learnedPeakDelta: null,
+                learnedPassMs: 85,
+                learnedLapsCount: 0,
+                totalHistoricalLaps: 0,
+                daysTrainedCount: 0,
+                peakDeltaInPass: 0,
+                peakColorInPass: null,
                 soundTone: "G5"
             }
         ];
+        // Corregir ID de vuelta actual P2
+        players[1].currentLapId = 'p2-current-lap';
 
         // --- SISTEMA DE APRENDIZAJE CONTINUO Y MEMORIA DÍA A DÍA (PERSISTENCIA IA) ---
         const AI_MEMORY_STORAGE_KEY = 'krono_ai_daily_brain_v1';
@@ -1741,7 +1754,13 @@
             if (cameraStream) return;
             videoStatus.textContent = 'INICIANDO...';
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).catch(() => navigator.mediaDevices.getUserMedia({ video: true }));
+                const videoConstraints = {
+                    facingMode: { ideal: "environment" },
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    frameRate: { ideal: 60, min: 30 }
+                };
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints }).catch(() => navigator.mediaDevices.getUserMedia({ video: true }));
 
                 videoElement.srcObject = cameraStream;
                 videoElement.onloadedmetadata = () => {
@@ -1750,6 +1769,15 @@
                     canvas.width = videoElement.videoWidth;
                     canvas.height = videoElement.videoHeight;
                     isProcessing = true;
+                    isSystemReady = false;
+                    players.forEach(p => {
+                        p.referencePixels = null;
+                        if (!p.roiInitialized) {
+                            const r = document.getElementById(p.roiId);
+                            if (r) { r.style.width = '30%'; r.style.height = '30%'; }
+                            p.roiInitialized = true;
+                        }
+                    });
                     processVideo();
                     
                     document.getElementById('roi-p1').style.display = 'block';
@@ -1764,6 +1792,8 @@
                     cameraOffBtn.disabled = false;
                     calibrateBtnP1.disabled = false;
                     calibrateBtnP2.disabled = false;
+
+                    window.runAutoCalibrationAll();
                 };
             } catch (err) {
                 videoStatus.textContent = 'Error: ' + err.name;
@@ -1773,7 +1803,7 @@
 
         function stopWebcam() {
             if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
-            cameraStream = null; isProcessing = false; videoElement.srcObject = null;
+            cameraStream = null; isProcessing = false; isSystemReady = false; videoElement.srcObject = null;
             videoElement.classList.remove('expanded-cam');
             document.querySelectorAll('.movable-rectangle').forEach(el => el.style.display = 'none');
             cameraOnBtn.disabled = false; cameraOffBtn.disabled = true;
@@ -1784,60 +1814,14 @@
             videoStatus.className = "text-amber-800 text-center text-xs mt-3 mb-2 font-semibold";
         }
 
-        // --- MULTI-COLOR & ADAPTIVE AI DETECTION LOGIC ---
-        function getRoiColorStats(roi) {
-            const vw = videoElement.videoWidth; const vh = videoElement.videoHeight;
-            if (!vw || !vh) return { r: 0, g: 0, b: 0 };
-            const rs = roi.style;
-            const x = Math.floor(vw * (parseFloat(rs.left)||0)/100);
-            const y = Math.floor(vh * (parseFloat(rs.top)||0)/100);
-            const w = Math.max(4, Math.ceil(vw * (parseFloat(rs.width)||10)/100));
-            const h = Math.max(4, Math.ceil(vh * (parseFloat(rs.height)||10)/100));
-            
-            const ctx = canvas.getContext('2d', {willReadFrequently:true});
-            ctx.drawImage(videoElement, x, y, w, h, 0, 0, w, h);
-            
-            try {
-                const d = ctx.getImageData(0,0,w,h).data;
-                let r = 0, g = 0, b = 0, count = 0; 
-                // Muestreo de los 3 canales de color (RGB) para detectar cualquier color de coche
-                for(let i=0; i<d.length; i+=16) { 
-                    r += d[i];
-                    g += d[i+1];
-                    b += d[i+2];
-                    count++;
-                }
-                if (count === 0) return { r: 0, g: 0, b: 0 };
-                return { r: r / count, g: g / count, b: b / count };
-            } catch(e){
-                return { r: 0, g: 0, b: 0 };
-            }
-        }
+        // --- SISTEMA DE DETECCIÓN KRONO DUAL PRO (30/60 FPS HÍBRIDO + MEMORIA IA) ---
+        const MAX_CAR_PASS_MS = 900; // Si permanece más de 900ms bloqueando el sensor se marca como obstrucción
 
-        // Calcula la diferencia cromática + luminancia para detectar cualquier color (incluso oscuros sobre pista negra)
-        function computeColorDelta(c1, c2) {
-            if (!c1 || !c2) return 0;
-            const dr = Math.abs(c1.r - c2.r);
-            const dg = Math.abs(c1.g - c2.g);
-            const db = Math.abs(c1.b - c2.b);
-            
-            // Distancia Euclidiana RGB normalizada
-            const euclidean = Math.sqrt(dr*dr + dg*dg + db*db) / 1.732;
-            // Canal dominante (detecta coches muy saturados aunque tengan igual brillo que el asfalto)
-            const maxChannel = Math.max(dr, dg, db);
-            // Diferencia de saturación/crominancia pura
-            const chromaDiff = Math.abs((c1.r - c1.g) - (c2.r - c2.g)) + Math.abs((c1.b - c1.g) - (c2.b - c2.g));
-            
-            return Math.max(euclidean, maxChannel * 0.85, chromaDiff * 0.45);
-        }
-
-        // Entrena el sensor en cada vuelta y acumula experiencia día a día
         function learnFromCarPass(p, peakDelta, peakColor, passDurationMs = 80) {
             if (!peakColor || peakDelta <= 0) return;
             p.learnedLapsCount++;
             p.totalHistoricalLaps = (p.totalHistoricalLaps || 0) + 1;
 
-            // Vector de contraste relativo al asfalto actual (permite reconocer el coche aunque mañana haya otra luz ambiente)
             const currentBase = p.baseColor || { r: 0, g: 0, b: 0 };
             const currentContrastVec = {
                 dr: peakColor.r - currentBase.r,
@@ -1845,7 +1829,6 @@
                 db: peakColor.b - currentBase.b
             };
 
-            // Peso adaptativo: aprende rápido en las primeras vueltas y estabiliza el conocimiento con los días
             const alpha = p.totalHistoricalLaps <= 5 ? 0.35 : (p.totalHistoricalLaps <= 25 ? 0.20 : 0.12);
             
             if (!p.learnedCarColor) {
@@ -1872,194 +1855,212 @@
                 }
             }
 
-            // Auto-ajuste inteligente de sensibilidad basado en el historial acumulado
-            const optimalSens = Math.max(6, Math.min(75, Math.round(p.learnedPeakDelta * 0.58)));
-            const blendedSens = Math.round(p.sensitivity * 0.70 + optimalSens * 0.30);
-            updateThresholdDisplays(p.id, blendedSens);
-
-            // Persistir inmediatamente en la memoria día a día
             saveCarAIMemory(p);
         }
 
-        // Muestra un cartel temporal en el ROI (ej. TEST OK) que desaparece solo y no se queda fijo
-        function flashRoiMsg(p, text, duration = 450) {
-            const msgEl = document.getElementById(p.msgId);
-            if (!msgEl) return;
-            if (p.msgTimeoutId) clearTimeout(p.msgTimeoutId);
-            msgEl.textContent = text;
-            msgEl.classList.add('visible');
-            p.msgTimeoutId = setTimeout(() => {
-                if (!p.isObstructed) {
-                    msgEl.textContent = "";
-                    msgEl.classList.remove('visible');
-                }
-            }, duration);
-        }
-
-        // Constantes de discriminación Coche vs Mano/Obstrucción
-        const MAX_CAR_PASS_MS = 380; // Un coche de slot cruza en pocos milisegundos (< 380ms). Más tiempo = Mano u obstrucción
-        const REBOUND_COOLDOWN_MS = 250; // Tiempo mínimo de pista libre entre pasadas en modo test (anti-rebote)
-
         function processVideo() {
-            if (!isProcessing) return;
-            
+            if (!isProcessing || !videoElement || videoElement.videoWidth === 0) {
+                if (isProcessing) requestAnimationFrame(processVideo);
+                return;
+            }
+
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             const now = Date.now();
 
             players.forEach(p => {
                 if (p.id > activePlayers) return;
 
                 const roi = document.getElementById(p.roiId);
-                const msgEl = document.getElementById(p.msgId);
-                const currentColor = getRoiColorStats(roi);
-                
-                // Inicializar el color base de la pista si aún no existe
-                if (p.baseColor === null) {
-                    p.baseColor = { ...currentColor };
-                }
+                if (!roi) return;
 
-                // 1. Diferencia multicolor respecto a la pista vacía
-                let effectiveDiff = computeColorDelta(currentColor, p.baseColor);
+                // 1. Coordenadas exactas mapeando el elemento visual real contra el vídeo con object-fit: cover
+                const vRect = videoElement.getBoundingClientRect();
+                const rRect = roi.getBoundingClientRect();
+                if (vRect.width === 0 || vRect.height === 0 || rRect.width === 0 || rRect.height === 0) return;
 
-                // 2. Si ya ha aprendido el color del coche (en esta sesión o de días anteriores):
-                //    - Usa tanto el color directo como la firma de contraste relativo (inmune a cambios de luz de un día a otro)
-                let matchesCarSignature = true;
-                const totalExperience = p.totalHistoricalLaps || p.learnedLapsCount;
-                if (p.learnedCarColor && totalExperience >= 2) {
-                    // Color proyectado del coche bajo la iluminación de hoy
-                    const expectedCarColor = (p.learnedContrastVec && p.baseColor) ? {
-                        r: Math.max(0, Math.min(255, p.baseColor.r + p.learnedContrastVec.dr)),
-                        g: Math.max(0, Math.min(255, p.baseColor.g + p.learnedContrastVec.dg)),
-                        b: Math.max(0, Math.min(255, p.baseColor.b + p.learnedContrastVec.db))
-                    } : p.learnedCarColor;
+                const vw = canvas.width;
+                const vh = canvas.height;
+                const videoRatio = vw / vh;
+                const containerRatio = vRect.width / vRect.height;
 
-                    const distToCar = Math.min(
-                        computeColorDelta(currentColor, p.learnedCarColor),
-                        computeColorDelta(currentColor, expectedCarColor)
-                    );
-                    const carExpectedDelta = Math.max(12, p.learnedPeakDelta || computeColorDelta(expectedCarColor, p.baseColor));
-
-                    if (distToCar < carExpectedDelta * 0.65) {
-                        // Coincide con la huella aprendida del coche: refuerzo de detección
-                        effectiveDiff = Math.max(effectiveDiff, effectiveDiff * 1.28);
-                    } else if (distToCar > carExpectedDelta * 1.40) {
-                        matchesCarSignature = false;
-                    }
-                }
-
-                document.getElementById(p.valId).textContent = `Δ${effectiveDiff.toFixed(0)}`;
-                
-                const crossed = effectiveDiff > p.sensitivity;
-
-                if (crossed) {
-                    if (p.triggerStartTime === 0) {
-                        p.triggerStartTime = now;
-                        p.peakDeltaInPass = effectiveDiff;
-                        p.peakColorInPass = { ...currentColor };
-                    } else {
-                        if (effectiveDiff > p.peakDeltaInPass) {
-                            p.peakDeltaInPass = effectiveDiff;
-                            p.peakColorInPass = { ...currentColor };
-                        }
-                    }
-
-                    const occupiedDuration = now - p.triggerStartTime;
-
-                    // DETECCIÓN DE OBSTRUCCIÓN (Mano humana, sombra prolongada o coche parado en el sensor)
-                    if (occupiedDuration > MAX_CAR_PASS_MS && !p.isObstructed) {
-                        p.isObstructed = true;
-                        roi.classList.remove('roi-detected');
-                        roi.classList.add('roi-obstructed');
-                        if (p.msgTimeoutId) clearTimeout(p.msgTimeoutId);
-                        msgEl.textContent = "⚠️ OBSTRUCCIÓN";
-                        msgEl.classList.add('visible');
-                    } else if (!p.isObstructed) {
-                        roi.classList.add('roi-detected');
-                    }
+                let renderW, renderH, offsetX, offsetY;
+                if (containerRatio > videoRatio) {
+                    renderW = vRect.width;
+                    renderH = vRect.width / videoRatio;
+                    offsetX = 0;
+                    offsetY = (renderH - vRect.height) / 2;
                 } else {
-                    // El sensor ha vuelto a quedar libre
-                    if (p.triggerStartTime > 0) {
-                        const passDuration = now - p.triggerStartTime;
-                        const wasObstructed = p.isObstructed;
-                        const sinceLastPass = now - p.lastTriggerEndTime;
-
-                        // Limpiar estados de ocupación
-                        p.triggerStartTime = 0;
-                        p.isObstructed = false;
-                        p.lastTriggerEndTime = now;
-                        roi.classList.remove('roi-detected', 'roi-obstructed');
-
-                        if (wasObstructed) {
-                            // Era una mano u obstrucción: limpiar cartel sin aprender ni validar como coche
-                            msgEl.textContent = "";
-                            msgEl.classList.remove('visible');
-                        } else if (passDuration <= MAX_CAR_PASS_MS && sinceLastPass > REBOUND_COOLDOWN_MS) {
-                            // Fue un pulso rápido real de un coche
-                            if (!isCalibrating && !isRaceActive && !isCountdown && !isPaused) {
-                                // En modo prueba: mostrar TEST OK brevemente y aprender el coche (guardando día a día)
-                                flashRoiMsg(p, "TEST OK", 500);
-                                if (p.peakDeltaInPass > 0 && p.peakColorInPass) {
-                                    learnFromCarPass(p, p.peakDeltaInPass, p.peakColorInPass, passDuration);
-                                }
-                            } else if (isRaceActive && !isPaused && matchesCarSignature) {
-                                // En carrera: consolidar el aprendizaje de la vuelta y guardarlo en memoria persistente
-                                if (p.peakDeltaInPass > 0 && p.peakColorInPass) {
-                                    learnFromCarPass(p, p.peakDeltaInPass, p.peakColorInPass, passDuration);
-                                }
-                            }
-                        }
-
-                        p.peakDeltaInPass = 0;
-                        p.peakColorInPass = null;
-                    } else {
-                        roi.classList.remove('roi-detected', 'roi-obstructed');
-                    }
-
-                    // Adaptación suave del fondo (RGB) SOLO cuando la pista está despejada y sin obstrucción
-                    if (!isCalibrating && !p.isObstructed) {
-                        p.baseColor.r = (p.baseColor.r * 0.96) + (currentColor.r * 0.04);
-                        p.baseColor.g = (p.baseColor.g * 0.96) + (currentColor.g * 0.04);
-                        p.baseColor.b = (p.baseColor.b * 0.96) + (currentColor.b * 0.04);
-                    }
+                    renderH = vRect.height;
+                    renderW = vRect.height * videoRatio;
+                    offsetY = 0;
+                    offsetX = (renderW - vRect.width) / 2;
                 }
 
-                if (!isCalibrating) {
-                    // 1. Salida nula en cuenta atrás
-                    if (isCountdown && !raceAborted) {
-                         if (crossed && !p.isBlocked && !p.isObstructed) {
-                             handleFalseStart(p);
-                             p.isBlocked = true;
-                         }
+                const relX = (rRect.left - vRect.left + offsetX) / renderW;
+                const relY = (rRect.top - vRect.top + offsetY) / renderH;
+                const relW = rRect.width / renderW;
+                const relH = rRect.height / renderH;
+
+                const x = Math.max(0, Math.min(vw - 1, Math.floor(relX * vw)));
+                const y = Math.max(0, Math.min(vh - 1, Math.floor(relY * vh)));
+                const w = Math.max(1, Math.min(vw - x, Math.floor(relW * vw)));
+                const h = Math.max(1, Math.min(vh - y, Math.floor(relH * vh)));
+
+                let crossed = false;
+
+                try {
+                    const imgData = ctx.getImageData(x, y, w, h);
+                    const data = imgData.data;
+
+                    if (!p.referencePixels || p.referencePixels.length !== data.length) {
+                        p.referencePixels = new Uint8Array(data.length);
+                        let br = 0, bg = 0, bb = 0, bCount = 0;
+                        for (let i = 0; i < data.length; i += 4) {
+                            p.referencePixels[i] = data[i];
+                            p.referencePixels[i+1] = data[i+1];
+                            p.referencePixels[i+2] = data[i+2];
+                            p.referencePixels[i+3] = data[i+3];
+                            br += data[i]; bg += data[i+1]; bb += data[i+2]; bCount++;
+                        }
+                        if (bCount > 0) p.baseColor = { r: br / bCount, g: bg / bCount, b: bb / bCount };
                     }
-                    // 2. Carrera en curso (con sistema anti-rebote y filtro de obstrucción)
-                    else if (isRaceActive && isDetectionReady && !p.finished && !isPaused) {
-                        if (now - p.lastRecordTime < blindTimeMs) {
-                             return;
+
+                    // 2. Algoritmo Híbrido de Krono Dual Pro: Media Global + Píxeles Activos
+                    let totalDiff = 0;
+                    let activePixels = 0;
+                    let actR = 0, actG = 0, actB = 0;
+                    const numPixels = data.length / 4;
+                    const pixelMovementThreshold = 32; // Cambio de color mínimo por píxel para considerarlo coche
+
+                    for (let i = 0; i < data.length; i += 4) {
+                        const rDiff = Math.abs(data[i] - p.referencePixels[i]);
+                        const gDiff = Math.abs(data[i+1] - p.referencePixels[i+1]);
+                        const bDiff = Math.abs(data[i+2] - p.referencePixels[i+2]);
+                        const pxDiff = (rDiff + gDiff + bDiff) / 3;
+                        totalDiff += pxDiff;
+                        if (pxDiff > pixelMovementThreshold) {
+                            activePixels++;
+                            actR += data[i];
+                            actG += data[i+1];
+                            actB += data[i+2];
                         }
+                    }
 
-                        // Solo cuenta si es un cruce nuevo, no está obstruido y no viene de un rebote inmediato
-                        if (crossed && !p.isBlocked && !p.isObstructed && (now - p.lastTriggerEndTime > REBOUND_COOLDOWN_MS)) {
-                            p.isBlocked = true;
-                            p.peakDeltaInPass = Math.max(p.peakDeltaInPass, effectiveDiff);
-                            p.peakColorInPass = { ...currentColor };
+                    const avgDiffPct = ((totalDiff / numPixels) / 255) * 100;
+                    const activeAreaPct = (activePixels / numPixels) * 100;
 
-                            if (!p.hasCrossedStart) {
-                                p.hasCrossedStart = true;
-                                p.lapStartTime = Date.now();
-                                p.lastRecordTime = Date.now();
-                                activateBlindTime(p);
-                                synth.triggerAttackRelease(p.soundTone, "0.1");
-                                flashRoiMsg(p, "TEST OK", 500);
-                            } else {
-                                flashRoiMsg(p, "TEST OK", 500);
-                                recordLap(p);
+                    // Combinamos ambas métricas para que un coche pequeño dentro de un ROI grande suba el porcentaje claramente
+                    p.currentChangePct = Math.min(100, Math.max(avgDiffPct * 2.2, activeAreaPct * 0.85));
+
+                    if (isSystemReady && !isCalibrating) {
+                        // Detección de cambio brusco de luz ambiental (>85% sostenido)
+                        if (avgDiffPct > 85) {
+                            p.lightShockFrames = (p.lightShockFrames || 0) + 1;
+                            if (p.lightShockFrames > 45) { // 1.5s de ceguera total = recalibrar luz
+                                p.lightShockFrames = 0;
+                                window.runAutoCalibration(p.id);
+                                return;
                             }
-                        } else if (!crossed && p.isBlocked) {
-                            p.isBlocked = false;
+                        } else {
+                            p.lightShockFrames = 0;
                         }
+
+                        if (p.currentChangePct >= p.sensitivity) {
+                            crossed = true;
+                        }
+
+                        // Seguimiento de tiempo ocupado y captura de firma de color para aprendizaje IA
+                        if (crossed) {
+                            if (!p.stuckStartTime) {
+                                p.stuckStartTime = now;
+                                p.peakDeltaInPass = p.currentChangePct;
+                            } else if (p.currentChangePct >= p.peakDeltaInPass) {
+                                p.peakDeltaInPass = p.currentChangePct;
+                            }
+                            if (activePixels > 0) {
+                                p.peakColorInPass = { r: actR / activePixels, g: actG / activePixels, b: actB / activePixels };
+                            }
+                        } else {
+                            if (p.stuckStartTime > 0) {
+                                const passDuration = now - p.stuckStartTime;
+                                if (passDuration <= MAX_CAR_PASS_MS && p.peakDeltaInPass > 0 && p.peakColorInPass) {
+                                    learnFromCarPass(p, p.peakDeltaInPass, p.peakColorInPass, passDuration);
+                                }
+                            }
+                            p.stuckStartTime = 0;
+                            p.peakDeltaInPass = 0;
+                            p.peakColorInPass = null;
+                        }
+
+                        // 4. Auto-calibrado suave de fondo (Solo cuando la pista está 100% libre y estable)
+                        if (!crossed && p.wasCrossed) {
+                            p.framesSinceLeft = 0;
+                        }
+                        if (!crossed && p.framesSinceLeft !== undefined) {
+                            p.framesSinceLeft++;
+                            if (p.framesSinceLeft === 25 && p.currentChangePct < (p.sensitivity * 0.5)) {
+                                for (let i = 0; i < data.length; i++) p.referencePixels[i] = data[i];
+                                p.framesSinceLeft = undefined;
+                            }
+                        }
+                        p.wasCrossed = crossed;
+                    }
+                } catch(e) { crossed = false; }
+
+                const valEl = document.getElementById(p.valId);
+                if (valEl) valEl.textContent = `Dif: ${p.currentChangePct.toFixed(1)}% | Umbral: ${p.sensitivity}`;
+
+                if (!isCalibrating && isSystemReady) {
+                    const msgEl = document.getElementById(p.msgId);
+                    const stuckDuration = (crossed && p.stuckStartTime) ? (now - p.stuckStartTime) : 0;
+
+                    // 5. Registro de Vuelta y Salida Nula (Tiene prioridad al entrar al sensor)
+                    if (isCountdown && crossed && !raceAborted) {
+                        if (typeof handleFalseStart === 'function') handleFalseStart(p);
                     }
                     
+                    if (isRaceActive && isDetectionReady && !p.finished && !isPaused) {
+                        if (now - p.lastRecordTime >= blindTimeMs) {
+                            if (crossed && !p.isBlocked) {
+                                p.isBlocked = true;
+                                if (!p.hasCrossedStart) {
+                                    p.hasCrossedStart = true; p.lapStartTime = now; p.lastRecordTime = now;
+                                    p.isLineBlocked = true; roi.classList.add('roi-locked');
+                                    setTimeout(() => { roi.classList.remove('roi-locked'); p.isLineBlocked = false; }, blindTimeMs);
+                                    if (Tone.context.state !== 'running') Tone.context.resume();
+                                    synth.triggerAttackRelease(p.soundTone, "0.1"); 
+                                    p.lastTriggerMsg = "GO!";
+                                    p.msgExpireTime = now + 900;
+                                } else {
+                                    p.lastTriggerMsg = "OK!";
+                                    p.msgExpireTime = now + 900;
+                                    recordLap(p);
+                                }
+                            } else if (!crossed && p.isBlocked) {
+                                p.isBlocked = false; 
+                            }
+                        }
+                    }
+
                     if (!crossed && p.isBlocked && !isCountdown) {
-                        p.isBlocked = false;
+                        if (now - p.lastRecordTime >= blindTimeMs) p.isBlocked = false;
+                    }
+
+                    // 6. Control Visual de Mensajes (Estilo Krono Dual Pro + aviso de obstrucción)
+                    if (crossed && stuckDuration >= MAX_CAR_PASS_MS) {
+                        roi.classList.add('roi-obstructed'); roi.classList.remove('roi-detected');
+                        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = "⚠️ OBSTRUCCIÓN"; }
+                    } else if (p.msgExpireTime && now < p.msgExpireTime) {
+                        roi.classList.add('roi-detected'); roi.classList.remove('roi-obstructed');
+                        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = p.lastTriggerMsg; }
+                    } else if (crossed) {
+                        roi.classList.add('roi-detected'); roi.classList.remove('roi-locked', 'roi-obstructed');
+                        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = isRaceActive ? "DETECT" : "TEST OK"; }
+                    } else {
+                        roi.classList.remove('roi-detected', 'roi-obstructed');
+                        if (!p.isLineBlocked) roi.classList.remove('roi-locked');
+                        if (msgEl) { msgEl.textContent = ""; msgEl.style.display = 'none'; }
                     }
                 }
             });
@@ -2069,72 +2070,118 @@
         // --- VISUAL LOCK HELPER ---
         function activateBlindTime(p) {
             const roiEl = document.getElementById(p.roiId);
+            p.isLineBlocked = true;
             roiEl.classList.add('roi-locked');
             setTimeout(() => {
                 roiEl.classList.remove('roi-locked');
+                p.isLineBlocked = false;
             }, blindTimeMs);
         }
 
-        // --- AUTO CALIBRATION (MULTI-COLOR RGB) ---
-        async function runAutoCalibration(pId) {
-            if (!isProcessing || isCalibrating) return;
+        // --- AUTO CALIBRATION (SISTEMA KRONO DUAL PRO) ---
+        window.runAutoCalibration = async function(pId) {
+            if (!isProcessing) return;
             isCalibrating = true;
+            calibOverlay.querySelector('h3').textContent = `Calibrando P${pId}...`;
             calibOverlay.classList.add('active');
             
-            let samples = 0;
-            const colorSamples = [];
-            const framesToRead = 60;
-            const roiEl = document.getElementById(`roi-p${pId}`);
-            
-            const readFrame = () => {
-                const c = getRoiColorStats(roiEl);
-                colorSamples.push(c);
-                
-                samples++;
-                if (samples < framesToRead) {
-                    requestAnimationFrame(readFrame);
-                } else {
-                    finishCalibration(colorSamples, pId);
-                }
-            };
-            
-            readFrame();
-        }
-        
-        function finishCalibration(colorSamples, pId) {
+            calibrateBtnP1.disabled = true;
+            if (calibrateBtnP2) calibrateBtnP2.disabled = true;
+
             const p = players[pId - 1];
-            const count = colorSamples.length || 1;
-            const avgColor = colorSamples.reduce((acc, c) => ({
-                r: acc.r + c.r / count,
-                g: acc.g + c.g / count,
-                b: acc.b + c.b / count
-            }), { r: 0, g: 0, b: 0 });
+            p.referencePixels = null;
+            await new Promise(r => setTimeout(r, 300));
 
-            p.baseColor = avgColor;
+            let samples = 0; 
+            let maxChange = 0; 
+            let minChange = 100;
+            let sumChange = 0;
+            const framesToRead = 60;
 
-            // Conservar el aprendizaje de días anteriores y recalcular el color esperado del coche con la nueva luz de la pista
-            loadCarAIMemory(p);
+            const checkInterval = setInterval(() => {
+                if (p.currentChangePct > maxChange) maxChange = p.currentChangePct;
+                if (p.currentChangePct < minChange) minChange = p.currentChangePct;
+                sumChange += p.currentChangePct;
 
-            let maxNoise = 0;
-            colorSamples.forEach(c => {
-                const d = computeColorDelta(c, avgColor);
-                if (d > maxNoise) maxNoise = d;
-            });
+                samples++;
+                if (samples >= framesToRead) {
+                    clearInterval(checkInterval);
+                    
+                    let base = sumChange / framesToRead;
+                    let noise = Math.max(maxChange - base, base - minChange);
+                    let safeMargin = 14;
+                    let targetSens = Math.ceil(base + (noise * 1.5) + safeMargin);
+                    
+                    p.sensitivity = Math.max(12, Math.min(75, targetSens));
+                    updateThresholdDisplays(p.id, p.sensitivity);
+                    
+                    p.stuckStartTime = 0;
+                    p.isLineBlocked = false;
+                    
+                    isCalibrating = false;
+                    isSystemReady = true;
+                    calibOverlay.classList.remove('active');
+                    calibOverlay.querySelector('h3').textContent = translations[currentLang].calibrating_title;
+                    calibrateBtnP1.disabled = false;
+                    if (calibrateBtnP2) calibrateBtnP2.disabled = false;
+                    speak('voice_calibrated', ` P${pId}`);
+                }
+            }, 33);
+        };
 
-            const safeMargin = 12;
-            const noiseBasedSens = Math.max(safeMargin, Math.ceil(maxNoise * 1.8));
-            // Si el coche ya tiene experiencia de vueltas/días previos, combinamos la calibración de luz de hoy con su sensibilidad aprendida
-            const finalSens = (p.learnedPeakDelta && p.totalHistoricalLaps > 0)
-                ? Math.max(noiseBasedSens, Math.round(p.learnedPeakDelta * 0.58))
-                : noiseBasedSens;
+        window.runAutoCalibrationAll = async function() {
+            if (!isProcessing) return;
+            isCalibrating = true; 
+            calibOverlay.querySelector('h3').textContent = `Estabilizando Sistema...`; 
+            calibOverlay.classList.add('active'); 
             
-            updateThresholdDisplays(pId, finalSens);
-            
-            isCalibrating = false;
-            calibOverlay.classList.remove('active');
-            
-            speak('voice_calibrated', ` Piloto ${pId}`);
-        }
+            calibrateBtnP1.disabled = true;
+            if (calibrateBtnP2) calibrateBtnP2.disabled = true;
+
+            players.forEach(p => p.referencePixels = null);
+            await new Promise(r => setTimeout(r, 800));
+
+            let samples = 0; 
+            let maxChange = [0, 0, 0];
+            let minChange = [100, 100, 100];
+            let sumChange = [0, 0, 0];
+            const framesToRead = 60;
+
+            const checkInterval = setInterval(() => {
+                players.forEach(p => {
+                    if (p.id <= activePlayers) {
+                        if (p.currentChangePct > maxChange[p.id]) maxChange[p.id] = p.currentChangePct;
+                        if (p.currentChangePct < minChange[p.id]) minChange[p.id] = p.currentChangePct;
+                        sumChange[p.id] += p.currentChangePct;
+                    }
+                });
+                samples++;
+                if (samples >= framesToRead) {
+                    clearInterval(checkInterval);
+                    players.forEach(p => {
+                        if (p.id <= activePlayers) {
+                            let base = sumChange[p.id] / framesToRead;
+                            let noise = Math.max(maxChange[p.id] - base, base - minChange[p.id]);
+                            let safeMargin = 14;
+                            let targetSens = Math.ceil(base + (noise * 1.5) + safeMargin);
+
+                            p.sensitivity = Math.max(12, Math.min(75, targetSens));
+                            updateThresholdDisplays(p.id, p.sensitivity);
+                            p.stuckStartTime = 0;
+                            p.isLineBlocked = false;
+                        }
+                    });
+                    
+                    isCalibrating = false; 
+                    isSystemReady = true;
+                    calibOverlay.classList.remove('active');
+                    calibOverlay.querySelector('h3').textContent = translations[currentLang].calibrating_title;
+                    calibrateBtnP1.disabled = false;
+                    if (calibrateBtnP2) calibrateBtnP2.disabled = false;
+                    speak('voice_calibrated', '');
+                }
+            }, 33);
+        };
 
         function handleFalseStart(player) {
             raceAborted = true;
@@ -2206,6 +2253,7 @@
                         p.lapStartTime += pauseDuration;
                         p.lastRecordTime += pauseDuration;
                     }
+                    p.referencePixels = null;
                 });
                 
                 isRaceActive = true;
@@ -2256,9 +2304,10 @@
             players.forEach(p => {
                 p.soundTone = document.getElementById(p.soundId).value;
                 p.laps=0; p.lapHistory=[]; p.bestLap=Infinity; p.totalTime=0; p.lastRecordTime=0; 
-                p.finished=false; p.isBlocked=false; 
+                p.finished=false; p.isBlocked=false; p.isLineBlocked=false;
                 p.hasCrossedStart=false;
-                // Conservar el color aprendido de las pruebas previas y reiniciar solo los picos temporales
+                p.stuckStartTime=0;
+                p.referencePixels=null;
                 p.peakDeltaInPass = 0;
                 p.peakColorInPass = null;
                 
@@ -2702,8 +2751,8 @@
         };
         
         // Corregido: Asignar los eventos a los nuevos botones independientes
-        calibrateBtnP1.onclick = () => runAutoCalibration(1);
-        calibrateBtnP2.onclick = () => runAutoCalibration(2);
+        calibrateBtnP1.onclick = () => window.runAutoCalibration(1);
+        calibrateBtnP2.onclick = () => window.runAutoCalibration(2);
         
         exportExcelBtn.onclick = exportToExcel;
         
@@ -2772,7 +2821,15 @@
             }
         }
 
-        function dragEnd() { isDrag = false; isResize = false; actRoi = null; }
+        function dragEnd() {
+            if (isDrag || isResize) {
+                if (actRoi) {
+                    const pId = actRoi.id === 'roi-p1' ? 1 : 2;
+                    players[pId - 1].referencePixels = null;
+                }
+            }
+            isDrag = false; isResize = false; actRoi = null;
+        }
 
         videoContainer.addEventListener('mousedown', dragStart);
         videoContainer.addEventListener('touchstart', dragStart, {passive: false});
