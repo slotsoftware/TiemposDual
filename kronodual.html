@@ -926,7 +926,7 @@
 
                 <!-- ROI PLAYER 1 (AZUL) -->
                 <div id="roi-p1" class="movable-rectangle" style="top: 25%; left: 10%;">
-                    <div class="roi-label">P1</div>
+                    <div class="roi-label">P1 <span id="ai-badge-p1" class="hidden ml-1 text-[9px] bg-black/50 px-1.5 py-0.5 rounded text-green-300 font-mono">IA:0</span></div>
                     <div id="msg-p1" class="test-msg"></div>
                     <div id="val-p1" class="detection-val">0</div>
                     <div class="resize-handle handle-tl"></div>
@@ -934,7 +934,7 @@
                 </div>
                 <!-- ROI PLAYER 2 (ROJO) -->
                 <div id="roi-p2" class="movable-rectangle" style="top: 25%; left: 60%;">
-                    <div class="roi-label">P2</div>
+                    <div class="roi-label">P2 <span id="ai-badge-p2" class="hidden ml-1 text-[9px] bg-black/50 px-1.5 py-0.5 rounded text-green-300 font-mono">IA:0</span></div>
                     <div id="msg-p2" class="test-msg"></div>
                     <div id="val-p2" class="detection-val">0</div>
                     <div class="resize-handle handle-tl"></div>
@@ -1381,7 +1381,7 @@
             {
                 id: 1,
                 nameId: 'p1-name', carId: 'p1-car',
-                roiId: 'roi-p1', valId: 'val-p1', msgId: 'msg-p1',
+                roiId: 'roi-p1', valId: 'val-p1', msgId: 'msg-p1', aiBadgeId: 'ai-badge-p1',
                 lapCountId: 'p1-lap-count', currentLapId: 'p1-current-lap',
                 bestLapId: 'p1-best-lap', lastLapId: 'p1-last-lap', avgSpeedId: 'p1-avg-speed',
                 avgTimeId: 'p1-avg-time', gapId: 'p1-gap',
@@ -1393,15 +1393,20 @@
                 totalTime: 0, isBlocked: false, finished: false,
                 hasCrossedStart: false,
                 
-                // Smart Detection State
+                // Smart Multi-Color & Adaptive Learning State
                 sensitivity: 20,
-                baseBrightness: null,
+                baseColor: null,       // { r, g, b } de la pista vacía
+                learnedCarColor: null, // { r, g, b } aprendido del coche en movimiento
+                learnedPeakDelta: null,// Pico de diferencia aprendido en cada vuelta
+                learnedLapsCount: 0,   // Contador de vueltas aprendidas por la IA
+                peakDeltaInPass: 0,    // Mayor delta registrado durante el cruce actual
+                peakColorInPass: null, // Color registrado en el pico del cruce actual
                 soundTone: "C5"
             },
             {
                 id: 2,
                 nameId: 'p2-name', carId: 'p2-car',
-                roiId: 'roi-p2', valId: 'val-p2', msgId: 'msg-p2',
+                roiId: 'roi-p2', valId: 'val-p2', msgId: 'msg-p2', aiBadgeId: 'ai-badge-p2',
                 lapCountId: 'p2-lap-count', currentLapId: 'p2-current-lap',
                 bestLapId: 'p2-best-lap', lastLapId: 'p2-last-lap', avgSpeedId: 'p2-avg-speed',
                 avgTimeId: 'p2-avg-time', gapId: 'p2-gap',
@@ -1413,9 +1418,14 @@
                 totalTime: 0, isBlocked: false, finished: false,
                 hasCrossedStart: false,
                 
-                // Smart Detection State
+                // Smart Multi-Color & Adaptive Learning State
                 sensitivity: 20,
-                baseBrightness: null,
+                baseColor: null,
+                learnedCarColor: null,
+                learnedPeakDelta: null,
+                learnedLapsCount: 0,
+                peakDeltaInPass: 0,
+                peakColorInPass: null,
                 soundTone: "G5"
             }
         ];
@@ -1593,27 +1603,83 @@
             videoStatus.className = "text-amber-800 text-center text-xs mt-3 mb-2 font-semibold";
         }
 
-        // --- FAST DETECTION LOGIC ---
-        function getRoiBrightness(roi) {
+        // --- MULTI-COLOR & ADAPTIVE AI DETECTION LOGIC ---
+        function getRoiColorStats(roi) {
             const vw = videoElement.videoWidth; const vh = videoElement.videoHeight;
-            if (!vw || !vh) return 0;
+            if (!vw || !vh) return { r: 0, g: 0, b: 0 };
             const rs = roi.style;
             const x = Math.floor(vw * (parseFloat(rs.left)||0)/100);
             const y = Math.floor(vh * (parseFloat(rs.top)||0)/100);
-            const w = Math.ceil(vw * (parseFloat(rs.width)||10)/100);
-            const h = Math.ceil(vh * (parseFloat(rs.height)||10)/100);
+            const w = Math.max(4, Math.ceil(vw * (parseFloat(rs.width)||10)/100));
+            const h = Math.max(4, Math.ceil(vh * (parseFloat(rs.height)||10)/100));
             
             const ctx = canvas.getContext('2d', {willReadFrequently:true});
             ctx.drawImage(videoElement, x, y, w, h, 0, 0, w, h);
             
             try {
                 const d = ctx.getImageData(0,0,w,h).data;
-                let t = 0; 
+                let r = 0, g = 0, b = 0, count = 0; 
+                // Muestreo de los 3 canales de color (RGB) para detectar cualquier color de coche
                 for(let i=0; i<d.length; i+=16) { 
-                    t+=(d[i]+d[i+1]+d[i+2]);
+                    r += d[i];
+                    g += d[i+1];
+                    b += d[i+2];
+                    count++;
                 }
-                return (t/3) / (d.length/16);
-            } catch(e){return 0;}
+                if (count === 0) return { r: 0, g: 0, b: 0 };
+                return { r: r / count, g: g / count, b: b / count };
+            } catch(e){
+                return { r: 0, g: 0, b: 0 };
+            }
+        }
+
+        // Calcula la diferencia cromática + luminancia para detectar cualquier color (incluso oscuros sobre pista negra)
+        function computeColorDelta(c1, c2) {
+            if (!c1 || !c2) return 0;
+            const dr = Math.abs(c1.r - c2.r);
+            const dg = Math.abs(c1.g - c2.g);
+            const db = Math.abs(c1.b - c2.b);
+            
+            // Distancia Euclidiana RGB normalizada
+            const euclidean = Math.sqrt(dr*dr + dg*dg + db*db) / 1.732;
+            // Canal dominante (detecta coches muy saturados aunque tengan igual brillo que el asfalto)
+            const maxChannel = Math.max(dr, dg, db);
+            // Diferencia de saturación/crominancia pura
+            const chromaDiff = Math.abs((c1.r - c1.g) - (c2.r - c2.g)) + Math.abs((c1.b - c1.g) - (c2.b - c2.g));
+            
+            return Math.max(euclidean, maxChannel * 0.85, chromaDiff * 0.45);
+        }
+
+        // Entrena el sensor en cada vuelta con la huella de color del coche que acaba de cruzar
+        function learnFromCarPass(p, peakDelta, peakColor) {
+            if (!peakColor || peakDelta <= 0) return;
+            p.learnedLapsCount++;
+            
+            if (!p.learnedCarColor) {
+                p.learnedCarColor = { ...peakColor };
+                p.learnedPeakDelta = peakDelta;
+            } else {
+                // Media exponencial para aprender y adaptarse progresivamente en cada vuelta
+                p.learnedCarColor.r = p.learnedCarColor.r * 0.65 + peakColor.r * 0.35;
+                p.learnedCarColor.g = p.learnedCarColor.g * 0.65 + peakColor.g * 0.35;
+                p.learnedCarColor.b = p.learnedCarColor.b * 0.65 + peakColor.b * 0.35;
+                p.learnedPeakDelta = p.learnedPeakDelta * 0.7 + peakDelta * 0.3;
+            }
+
+            // Auto-ajuste inteligente de sensibilidad basado en el aprendizaje de la vuelta (58% del pico aprendido)
+            const optimalSens = Math.max(6, Math.min(75, Math.round(p.learnedPeakDelta * 0.58)));
+            const blendedSens = Math.round(p.sensitivity * 0.65 + optimalSens * 0.35);
+            updateThresholdDisplays(p.id, blendedSens);
+
+            // Actualizar insignia visual de aprendizaje en el ROI
+            const badge = document.getElementById(p.aiBadgeId);
+            if (badge) {
+                badge.classList.remove('hidden');
+                badge.textContent = `IA:${p.learnedLapsCount}`;
+                badge.style.backgroundColor = `rgb(${Math.round(p.learnedCarColor.r)}, ${Math.round(p.learnedCarColor.g)}, ${Math.round(p.learnedCarColor.b)})`;
+                const luma = 0.299 * p.learnedCarColor.r + 0.587 * p.learnedCarColor.g + 0.114 * p.learnedCarColor.b;
+                badge.style.color = luma > 135 ? '#000' : '#fff';
+            }
         }
 
         function processVideo() {
@@ -1625,24 +1691,55 @@
                 if (p.id > activePlayers) return;
 
                 const roi = document.getElementById(p.roiId);
-                const currentBri = getRoiBrightness(roi);
-                document.getElementById(p.valId).textContent = currentBri.toFixed(0);
+                const currentColor = getRoiColorStats(roi);
                 
-                if (p.baseBrightness === null) p.baseBrightness = currentBri;
+                if (p.baseColor === null) {
+                    p.baseColor = { ...currentColor };
+                }
 
-                const diff = Math.abs(currentBri - p.baseBrightness);
-                const crossed = diff > p.sensitivity;
+                // 1. Diferencia multi-color respecto al fondo de la pista
+                let effectiveDiff = computeColorDelta(currentColor, p.baseColor);
+
+                // 2. Si ya ha aprendido el color del coche en vueltas previas, refuerza la señal cuando vuelve a ver ese color
+                if (p.learnedCarColor) {
+                    const distToCar = computeColorDelta(currentColor, p.learnedCarColor);
+                    const carExpectedDelta = computeColorDelta(p.learnedCarColor, p.baseColor);
+                    if (distToCar < carExpectedDelta * 0.55) {
+                        effectiveDiff = Math.max(effectiveDiff, effectiveDiff * 1.25);
+                    }
+                }
+
+                document.getElementById(p.valId).textContent = `Δ${effectiveDiff.toFixed(0)}`;
+                
+                const crossed = effectiveDiff > p.sensitivity;
 
                 if (crossed) {
                     roi.classList.add('roi-detected');
+                    // Capturar el pico máximo de color durante la pasada del coche para aprender de él
+                    if (effectiveDiff > p.peakDeltaInPass) {
+                        p.peakDeltaInPass = effectiveDiff;
+                        p.peakColorInPass = { ...currentColor };
+                    }
                 } else {
                     roi.classList.remove('roi-detected');
+                    // Si el coche acaba de salir del ROI, consolidar lo aprendido en esta pasada
+                    if (p.peakDeltaInPass > 0 && p.peakColorInPass) {
+                        if (!isPaused && !isCountdown) {
+                            learnFromCarPass(p, p.peakDeltaInPass, p.peakColorInPass);
+                        }
+                        p.peakDeltaInPass = 0;
+                        p.peakColorInPass = null;
+                    }
+                    // Adaptación suave del fondo (RGB) ante cambios de luz ambiental cuando no pasa el coche
                     if (!isCalibrating) {
-                        p.baseBrightness = (p.baseBrightness * 0.95) + (currentBri * 0.05);
+                        p.baseColor.r = (p.baseColor.r * 0.96) + (currentColor.r * 0.04);
+                        p.baseColor.g = (p.baseColor.g * 0.96) + (currentColor.g * 0.04);
+                        p.baseColor.b = (p.baseColor.b * 0.96) + (currentColor.b * 0.04);
                     }
                 }
 
                 if (!isCalibrating) {
+                    // Mostrar TEST OK cuando pasa un coche antes de iniciar la carrera
                     if (!isRaceActive && !isCountdown && crossed && !isPaused) {
                          document.getElementById(p.msgId).textContent = "TEST OK";
                     } else if (!isRaceActive) {
@@ -1662,15 +1759,25 @@
 
                         if (crossed && !p.isBlocked) {
                             p.isBlocked = true;
+                            // Registrar la huella inicial del coche desde el mismo instante en que cruza
+                            p.peakDeltaInPass = Math.max(p.peakDeltaInPass, effectiveDiff);
+                            p.peakColorInPass = { ...currentColor };
+
                             if (!p.hasCrossedStart) {
                                 p.hasCrossedStart = true;
                                 p.lapStartTime = Date.now();
                                 p.lastRecordTime = Date.now();
                                 activateBlindTime(p);
+                                learnFromCarPass(p, p.peakDeltaInPass, p.peakColorInPass);
+                                p.peakDeltaInPass = 0;
+                                p.peakColorInPass = null;
                                 synth.triggerAttackRelease(p.soundTone, "0.1");
-                                document.getElementById(p.msgId).textContent = "GO!";
+                                document.getElementById(p.msgId).textContent = "TEST OK";
                             } else {
-                                document.getElementById(p.msgId).textContent = "OK";
+                                document.getElementById(p.msgId).textContent = "TEST OK";
+                                learnFromCarPass(p, p.peakDeltaInPass, p.peakColorInPass);
+                                p.peakDeltaInPass = 0;
+                                p.peakColorInPass = null;
                                 recordLap(p);
                             }
                         } else if (!crossed && p.isBlocked) {
@@ -1696,40 +1803,57 @@
             }, blindTimeMs);
         }
 
-        // --- AUTO CALIBRATION ---
+        // --- AUTO CALIBRATION (MULTI-COLOR RGB) ---
         async function runAutoCalibration(pId) {
             if (!isProcessing || isCalibrating) return;
             isCalibrating = true;
             calibOverlay.classList.add('active');
             
             let samples = 0;
-            const stats = { sum: 0, min: 255, max: 0 };
+            const colorSamples = [];
             const framesToRead = 60;
             const roiEl = document.getElementById(`roi-p${pId}`);
             
             const readFrame = () => {
-                const b = getRoiBrightness(roiEl);
-                stats.sum += b; 
-                stats.min = Math.min(stats.min, b); 
-                stats.max = Math.max(stats.max, b);
+                const c = getRoiColorStats(roiEl);
+                colorSamples.push(c);
                 
                 samples++;
                 if (samples < framesToRead) {
                     requestAnimationFrame(readFrame);
                 } else {
-                    finishCalibration(stats, pId);
+                    finishCalibration(colorSamples, pId);
                 }
             };
             
             readFrame();
         }
         
-        function finishCalibration(stats, pId) {
+        function finishCalibration(colorSamples, pId) {
             const p = players[pId - 1];
-            p.baseBrightness = stats.sum / 60;
-            const noise = Math.max(stats.max - p.baseBrightness, p.baseBrightness - stats.min);
-            const safeMargin = 15;
-            const newSens = Math.max(safeMargin, Math.ceil(noise * 1.5));
+            const count = colorSamples.length || 1;
+            const avgColor = colorSamples.reduce((acc, c) => ({
+                r: acc.r + c.r / count,
+                g: acc.g + c.g / count,
+                b: acc.b + c.b / count
+            }), { r: 0, g: 0, b: 0 });
+
+            p.baseColor = avgColor;
+            // Reiniciar memoria de aprendizaje al recalibrar la pista
+            p.learnedCarColor = null;
+            p.learnedPeakDelta = null;
+            p.learnedLapsCount = 0;
+            const badge = document.getElementById(p.aiBadgeId);
+            if (badge) badge.classList.add('hidden');
+
+            let maxNoise = 0;
+            colorSamples.forEach(c => {
+                const d = computeColorDelta(c, avgColor);
+                if (d > maxNoise) maxNoise = d;
+            });
+
+            const safeMargin = 12;
+            const newSens = Math.max(safeMargin, Math.ceil(maxNoise * 1.8));
             
             updateThresholdDisplays(pId, newSens);
             
@@ -1861,6 +1985,9 @@
                 p.laps=0; p.lapHistory=[]; p.bestLap=Infinity; p.totalTime=0; p.lastRecordTime=0; 
                 p.finished=false; p.isBlocked=false; 
                 p.hasCrossedStart=false;
+                // Conservar el color aprendido de las pruebas previas y reiniciar solo los picos temporales
+                p.peakDeltaInPass = 0;
+                p.peakColorInPass = null;
                 
                 updatePlayerUI(p);
                 document.getElementById(p.currentLapId).textContent = "ESPERANDO...";
