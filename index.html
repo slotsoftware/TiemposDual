@@ -1,4 +1,9 @@
-<!-- ... existing code ... -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KronoDual Lite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -99,11 +104,11 @@
 
     <!-- Modal de Sesión Duplicada -->
     <div id="session-alert">
-        <div class="chrome-panel p-8 rounded-2xl max-w-sm text-center border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+        <div class="chrome-panel p-8 rounded-2xl max-w-sm text-center border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.3)] mx-4">
             <i class="fas fa-user-shield text-4xl text-red-400 mb-4"></i>
             <h3 class="text-xl font-bold text-white mb-2">Sesión Finalizada</h3>
-            <p class="text-sm text-slate-300 mb-6">Se ha detectado un inicio de sesión en otro dispositivo.</p>
-            <button onclick="location.reload()" class="btn-copper w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest">
+            <p class="text-base text-slate-300 mb-6">Se ha detectado un inicio de sesión en otro dispositivo.</p>
+            <button onclick="location.reload()" class="btn-copper w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest">
                 Entendido
             </button>
         </div>
@@ -113,8 +118,8 @@
         
         <div class="text-center mb-8 md:mb-10 mt-4">
             <h1 class="text-3xl md:text-4xl font-black tracking-tighter copper-text uppercase drop-shadow-lg">KRONO DUAL LITE</h1>
-            <div class="h-1 w-20 md:w-24 bg-gradient-to-r from-transparent via-orange-500 to-transparent mx-auto mt-1"></div>
-            <p class="text-orange-600/80 text-[9px] md:text-[10px] uppercase tracking-[0.3em] mt-2 font-bold">Copper Edition / Gestión de Slot</p>
+            <div class="h-1 w-24 md:w-32 bg-gradient-to-r from-transparent via-orange-500 to-transparent mx-auto mt-2"></div>
+            <p class="text-orange-600/80 text-xs md:text-sm uppercase tracking-[0.3em] mt-3 font-bold">Copper Edition / Gestión de Slot</p>
         </div>
 
         <div class="img-container">
@@ -126,7 +131,7 @@
                 
                 <div id="placeholder" class="flex flex-col items-center justify-center p-5 text-center text-orange-700/50" style="display: none;">
                     <i class="fas fa-trophy text-6xl mb-4 opacity-30"></i>
-                    <p class="text-xs font-bold uppercase tracking-widest text-orange-500">kronoro.jpg</p>
+                    <p class="text-sm font-bold uppercase tracking-widest text-orange-500">kronoro.jpg</p>
                 </div>
             </div>
         </div>
@@ -135,19 +140,19 @@
 
             <!-- Panel Adquisición -->
             <div class="copper-panel rounded-3xl p-6 md:p-8 relative flex flex-col justify-between">
-                <div class="absolute -top-3 -right-3 bg-black text-orange-400 text-[9px] font-bold px-3 py-1 rounded-full border border-orange-500 shadow-xl">LICENCIA LITE</div>
+                <div class="absolute -top-3 -right-3 bg-black text-orange-400 text-[10px] md:text-xs font-bold px-4 py-1.5 rounded-full border border-orange-500 shadow-xl">LICENCIA LITE</div>
                 
                 <div>
-                    <h2 class="text-lg md:text-xl font-black mb-4 flex items-center text-orange-950">
+                    <h2 class="text-xl md:text-2xl font-black mb-4 flex items-center text-orange-950">
                         <i class="fas fa-crown mr-3 opacity-80"></i> ADQUISICIÓN
                     </h2>
                     
-                    <p class="text-orange-950/90 text-sm mb-6 leading-relaxed font-bold">
+                    <p class="text-orange-950/90 text-base mb-6 leading-relaxed font-bold">
                         Tecnología de precisión para Slot. Un solo pago de 10€, control total de por vida.
                     </p>
 
                     <div class="bg-black/10 rounded-2xl p-5 border border-black/10 mb-6">
-                        <ul class="text-xs space-y-3 text-orange-950 font-black">
+                        <ul class="text-sm md:text-base space-y-3 text-orange-950 font-black">
                             <li class="flex items-center"><i class="fas fa-check-circle mr-2 text-orange-900"></i> Solicita acceso vía Email</li>
                             <li class="flex items-center"><i class="fas fa-check-circle mr-2 text-orange-900"></i> Pago único de 10,00€</li>
                             <li class="flex items-center"><i class="fas fa-check-circle mr-2 text-orange-900"></i> Activación Vitalicia</li>
@@ -155,42 +160,42 @@
                     </div>
                 </div>
 
-                <a id="mail-link" href="#" class="block w-full bg-black hover:bg-neutral-900 text-orange-400 font-black py-4 rounded-xl text-center shadow-2xl transition duration-300 transform hover:scale-[1.02] text-sm tracking-widest uppercase border border-orange-600">
+                <a id="mail-link" href="#" class="block w-full bg-black hover:bg-neutral-900 text-orange-400 font-black py-4 rounded-xl text-center shadow-2xl transition duration-300 transform hover:scale-[1.02] text-base tracking-widest uppercase border border-orange-600">
                     SOLICITAR AHORA (10€)
                 </a>
             </div>
 
             <!-- Panel Login -->
             <div class="chrome-panel rounded-3xl p-6 md:p-8 flex flex-col">
-                <h2 class="text-lg md:text-xl font-bold text-white mb-6 flex items-center copper-text">
+                <h2 class="text-xl md:text-2xl font-bold text-white mb-6 flex items-center copper-text">
                     <i class="fas fa-fingerprint mr-3"></i> AREA CLIENTE
                 </h2>
 
                 <form id="login-form" class="space-y-6 flex-grow">
                     <div>
-                        <label class="block text-[10px] font-black text-orange-600/80 uppercase mb-2 tracking-widest">Identificación</label>
+                        <label class="block text-xs font-black text-orange-600/80 uppercase mb-2 tracking-widest">Identificación</label>
                         <input type="email" id="email" required 
-                            class="w-full input-metallic rounded-xl p-4 text-sm"
+                            class="w-full input-metallic rounded-xl p-4 text-base"
                             placeholder="tu@email.com">
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-black text-orange-600/80 uppercase mb-2 tracking-widest">Código de Activación</label>
+                        <label class="block text-xs font-black text-orange-600/80 uppercase mb-2 tracking-widest">Código de Activación</label>
                         <input type="text" id="code" required 
-                            class="w-full input-metallic rounded-xl p-4 text-center tracking-[0.5em] uppercase font-mono text-sm"
+                            class="w-full input-metallic rounded-xl p-4 text-center tracking-[0.5em] uppercase font-mono text-base"
                             placeholder="XXX-XXX">
                     </div>
                     
-                    <div id="msg-box" class="hidden p-3 rounded-xl text-xs text-center font-bold break-words"></div>
+                    <div id="msg-box" class="hidden p-3 rounded-xl text-sm text-center font-bold break-words"></div>
 
-                    <button type="submit" id="btn-login" class="btn-copper w-full font-black py-4 rounded-xl shadow-xl transition flex justify-center items-center text-sm tracking-widest uppercase">
-                        ENTRAR <i class="fas fa-chevron-right ml-3 text-xs"></i>
+                    <button type="submit" id="btn-login" class="btn-copper w-full font-black py-4 rounded-xl shadow-xl transition flex justify-center items-center text-base tracking-widest uppercase">
+                        ENTRAR <i class="fas fa-chevron-right ml-3 text-sm"></i>
                     </button>
                 </form>
             </div>
         </div>
         
-        <p class="mt-12 text-[9px] text-orange-800/50 text-center max-w-lg uppercase tracking-[0.2em] font-medium">
+        <p class="mt-12 text-[10px] md:text-xs text-orange-800/50 text-center max-w-lg uppercase tracking-[0.2em] font-medium pb-4">
             KronoDual Lite <span class="mx-2">|</span> slotcarhome@gmail.com
         </p>
     </div>
@@ -238,7 +243,7 @@
         
         function updateMailLink() {
             const subject = "Interés Licencia KronoDual Lite";
-            const body = `Hola equipo de SLOTSOFTWARE,%0D%0A%0D%0AEstoy muy interesado en adquirir la licencia de Krono Dual Lite por la cantidad de 10 euros.%0D%0A%0D%0AQuedo a la espera de sus instrucciones para proceder con el pago.%0D%0A%0D%0AGracias y un saludo.`;
+            const body = `Hola equipo de SlotSoftware,%0D%0A%0D%0AEstoy muy interesado en adquirir la licencia de Krono Dual Lite por la cantidad de 10 euros.%0D%0A%0D%0AQuedo a la espera de sus instrucciones para proceder con el pago.%0D%0A%0D%0AGracias y un saludo.`;
             mailLink.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
         }
         emailInput.addEventListener('input', updateMailLink);
